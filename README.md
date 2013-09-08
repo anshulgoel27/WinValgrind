@@ -22,6 +22,7 @@ To build the tool from source, check out the source in some local directory. Ope
 In the output folder you will get:
 
   1.) WinValgrind?.exe --> command line interface utility to inject the parasite into a process.
+  
   2.) parasite.dll --> Spy DLL which hook the windows API's.
 
 -->Enable logging for the tool by setting the value of "WINVAL_LOG" as 1.
@@ -43,6 +44,7 @@ usage: winvalgrind [-gc] | [-sm <PID>]
 1.) First you need to generate the default config.xml template.
 
   --> Execute "winvalgrind.exe -gc"
+  
     ----> This command will generate the default config.xml file into the winvalgrind.exe directory.
       *------------ Config.xml default template-------------------*
       
@@ -62,13 +64,19 @@ usage: winvalgrind [-gc] | [-sm <PID>]
       </WinValgrind>
 
   --> Config.xml, serves as configuration file which will be read/loaded to set the initialisation parameters for parasite.dll.
+    
     --> MonitorType tag's value define type of tracing user want to enable.
+    
     -----> MEMORY : Memory leak detection.
+    
     -----> GDI : GDI object leak detection.
+    
     -----> HANDLE: Handle leak detection.
 
   --> PDBInfo tags define the path to the symbol file.
+    
     ----> 1st pdbinfo is the path to the directory of parasite.dll.
+    
     ----> 2nd is the system DLL path.
 
   Note: path 1 & 2 are compulsory, do not remove them.
@@ -227,8 +235,11 @@ What is coming up?
 ==================
 
   --> Memory allocation API hooks.
+  
   --> GDI objects allocation API hooks.
+  
   --> GUI
+  
   --> Overall performance improvements.
 
 Contact me
