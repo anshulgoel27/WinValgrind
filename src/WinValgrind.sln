@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinValgrind", "WinValgrind\WinValgrind.vcxproj", "{7F4BAB83-1B36-402E-AF80-05DB82BDFE04}"
+	ProjectSection(ProjectDependencies) = postProject
+		{12AB3998-7533-4B04-A105-E4ACF1A75DE6} = {12AB3998-7533-4B04-A105-E4ACF1A75DE6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "parasite", "Parasite\parasite.vcxproj", "{12AB3998-7533-4B04-A105-E4ACF1A75DE6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7F4BAB83-1B36-402E-AF80-05DB82BDFE04}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7F4BAB83-1B36-402E-AF80-05DB82BDFE04}.Debug|Win32.Build.0 = Debug|Win32
+		{7F4BAB83-1B36-402E-AF80-05DB82BDFE04}.Release|Win32.ActiveCfg = Release|Win32
+		{7F4BAB83-1B36-402E-AF80-05DB82BDFE04}.Release|Win32.Build.0 = Release|Win32
+		{12AB3998-7533-4B04-A105-E4ACF1A75DE6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12AB3998-7533-4B04-A105-E4ACF1A75DE6}.Debug|Win32.Build.0 = Debug|Win32
+		{12AB3998-7533-4B04-A105-E4ACF1A75DE6}.Release|Win32.ActiveCfg = Release|Win32
+		{12AB3998-7533-4B04-A105-E4ACF1A75DE6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
