@@ -114,10 +114,6 @@ Internals of tool
 
 Basically this application works by hooking all the windows API's which are used to allocate and deallocate memory.
 
-For hooking the windows API I have taken inspiration from a code project article by Ivo. http://www.codeproject.com/Articles/2082/API-hooking-revealed
-
-Ivo has explained every bit of API hooking in a very nice and detailed way.
-
 Now, after the hooking is complete, For each allocation of memory I save its stack in stl map address keys. Map entry for a address is only cleared if, respective deallocation function is called on that address.
 
 at-last, all the remaining entries in map are treated as leaked once, and there stack is dumped to file.
