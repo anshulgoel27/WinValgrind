@@ -25,7 +25,7 @@ In the output folder you will get:
   
   2.) parasite.dll --> Spy DLL which hook the windows API's.
 
--->Enable logging for the tool by setting the value of "WINVAL_LOG" as 1.
+-->Enable logging for the tool by setting the value of "WINVAL_LOG" environment variable as 1.
 
 How to use the tool
 ===================
