@@ -25,10 +25,10 @@ parasite.vcxproj.filters
 
 parasite.h
     This is the main header file for the DLL.  It declares the
-    CparasiteApp class.
+    CParasiteApp class.
 
 parasite.cpp
-    This is the main DLL source file.  It contains the class CparasiteApp.
+    This is the main DLL source file.  It contains the class CParasiteApp.
 
 parasite.rc
     This is a listing of all of the Microsoft Windows resources that the

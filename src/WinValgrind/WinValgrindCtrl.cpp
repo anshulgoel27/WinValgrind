@@ -44,11 +44,17 @@ DWORD WINAPI ConsoleUIThreadProc(LPVOID lpParam)
 			CloseHandle( hMemRestEvent );
 		}
 		else
+		if(command == L"-e")
 		{
 			HANDLE hDumpEvent = CreateEvent( 0, TRUE, FALSE, DUMP_EVENT );
 			SetEvent( hDumpEvent );
 			CloseHandle( hDumpEvent );
+
 			break;
+		}
+		else
+		{
+			continue;
 		}
 	}
 

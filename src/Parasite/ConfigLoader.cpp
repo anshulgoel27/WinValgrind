@@ -22,8 +22,9 @@ bool CConfigLoader::LoadConfig()
    dlog("Loading config.xml...")
    if(!doc.load_file(m_csDllPath + "config.xml")) 
    {
-	   dlog("Failed to load config.xml")
-	   return false;
+	   dlog("Failed to load config.xml. Default config loaded.")
+
+	   return LoadDLL();
    }
 
     pugi::xml_node pdb = doc.child("WinValgrind").child("PDBInfo");
@@ -76,24 +77,25 @@ bool CConfigLoader::LoadDLL()
         csLoadedDll.ReleaseBuffer();
         if( !pSymRefreshModuleList )
         {
-            // old version of dbghelp :(
             dlog( "Your application has already loaded dbghelp.dll from " + csLoadedDll + "\n\nFor acqurate results, replace this dll with the latest version of dbghelp.dll coming with \"Debugging tools for windows\" or with the dll the application folder of this utility.");
         }
         else
         {
-            dlog( "Your application has already loaded dbghelp.dll from " + csLoadedDll + " Please confirm that the symsrv.dll exists in th same folder.\n Otherwise symbol server will not work.");
+            dlog( "Your application has already loaded dbghelp.dll from " + csLoadedDll + " Please confirm that the symsrv.dll exists in th same folder. Otherwise symbol server will not work.");
         }
         
     }
     else 
     {
 		dlog("loading dbghelp.dll...")
+
         m_csDllPath += _T("dbghelp.dll");
         
         hModule = LoadLibrary( m_csDllPath );
         if( !hModule)
         {
 			dlog("loaded dbghelp.dll from system path")
+
             hModule = LoadLibrary(  _T("dbghelp.dll"));
             pSymRefreshModuleList = (SymRefreshModuleListDef)GetProcAddress( hModule, _T("SymRefreshModuleList"));
             if( !pSymRefreshModuleList )
@@ -105,6 +107,7 @@ bool CConfigLoader::LoadDLL()
         else
         {
 			dlog(m_csDllPath+" loaded")
+			
             pSymRefreshModuleList = (SymRefreshModuleListDef)GetProcAddress( hModule, _T("SymRefreshModuleList"));
         }
         
@@ -118,13 +121,17 @@ bool CConfigLoader::LoadDLL()
     }
 
 	dlog("symbol paths from config.xml "+m_csPath)
+
     SymCleanup(GetCurrentProcess());
     CString csWholePath = m_csPath;
     csWholePath.TrimRight( ';' );
-	dlog("symbol paths "+csWholePath)
+
+	dlog("Going to load symbols from path "+csWholePath)
+
     DWORD dwOption = SymGetOptions();
     dwOption |= SYMOPT_CASE_INSENSITIVE|SYMOPT_LOAD_LINES|SYMOPT_FAIL_CRITICAL_ERRORS|
-                SYMOPT_LOAD_ANYTHING|SYMOPT_UNDNAME;    
+                SYMOPT_LOAD_ANYTHING|SYMOPT_UNDNAME;
+
     SymSetOptions( dwOption );
     CWinThread* pThread = AfxBeginThread( ThreadEntry, this );
     HANDLE hThread = pThread->m_hThread;
@@ -133,21 +140,24 @@ bool CConfigLoader::LoadDLL()
     BOOL fInvadeProcess = (0 == pSymRefreshModuleList)?TRUE:FALSE;
 	
 	if(fInvadeProcess)
+	{
 		dlog("symbol modules will be loaded for the process")
+	}
     
     BOOL bRet = SymInitialize(GetCurrentProcess(), (LPTSTR)csWholePath.operator LPCTSTR() , fInvadeProcess );
     SymRegisterCallback64( GetCurrentProcess(),SymRegisterCallbackProc64,(ULONG64 )this );
+
     while( !m_ProgressDlg.m_hWnd )// wait untill the dialog is created
     {
         Sleep( 50 );
     }
-	//Sleep(20000);
+	
     if( pSymRefreshModuleList )
     {
         dlog("refresing module symbol list")
 		pSymRefreshModuleList( GetCurrentProcess());
     }
-    //SymRefreshModuleList( GetCurrentProcess());
+    
     m_ProgressDlg.SendMessage( WM_CLOSE );
     WaitForSingleObject( hThread, 10000 );
 	return true;
@@ -166,8 +176,10 @@ BOOL CALLBACK CConfigLoader::SymRegisterCallbackProc64(HANDLE hProcess,
         CConfigLoader* pDlg = (CConfigLoader*)UserContext;
         CString csLoadtext = _T("Loading symbol for file: ");
         csLoadtext += pSybolLoadInfo->FileName;
-		dlog(pSybolLoadInfo->FileName)
-        if (pDlg->m_ProgressDlg)
+
+		dlog(csLoadtext)
+        
+		if (pDlg->m_ProgressDlg)
             pDlg->m_ProgressDlg.SetDlgItemText( IDC_LOAD_INFO, csLoadtext );
     }
     return FALSE;

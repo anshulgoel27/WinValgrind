@@ -6,32 +6,32 @@
 #include "ConfigLoader.h"
 
 
-// CparasiteApp
+// CParasiteApp
 
-BEGIN_MESSAGE_MAP(CparasiteApp, CWinApp)
+BEGIN_MESSAGE_MAP(CParasiteApp, CWinApp)
 END_MESSAGE_MAP()
 
 
 
 //////////////////////////////////////////////////////////////////////////////////
 
-CApiHookMgr*  CparasiteApp::sm_pHookMgr       = NULL;
+CApiHookMgr*  CParasiteApp::sm_pHookMgr       = NULL;
 
 
-// CparasiteApp construction
+// CParasiteApp construction
 
-CparasiteApp::CparasiteApp()
+CParasiteApp::CParasiteApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 }
 
 
-// The one and only CparasiteApp object
+// The one and only CParasiteApp object
 
-CparasiteApp theApp;
+CParasiteApp theApp;
 
-DWORD WINAPI CparasiteApp::DumpController( LPVOID pParam )
+DWORD WINAPI CParasiteApp::DumpController( LPVOID pParam )
 {
     AFX_MANAGE_STATE( AfxGetStaticModuleState());
 	
@@ -43,88 +43,99 @@ DWORD WINAPI CparasiteApp::DumpController( LPVOID pParam )
 		dlog("Continuing with default configuration...")
 	}
     
-	CparasiteApp* thisApp = (CparasiteApp*)pParam;
+	CParasiteApp* thisApp = (CParasiteApp*)pParam;
 	sm_pHookMgr = new CApiHookMgr();
 	
 	//
 	// Initially we must hook a few important functions
 	//
-	sm_pHookMgr->HookSystemFuncs();
+	dlog("Hooking system functions.")
+	if(sm_pHookMgr->HookSystemFuncs())
+	{
+		dlog("System API's hooked.")
+	}
 	
 
     if( HT_MEMORY == g_Config::g_HookType )
     {
-        
+        dlog("Starting memory leak detection.")
+		dlog("Hooking memory allocation functions.")
     }
     else if( HT_GDI == g_Config::g_HookType )
     {
-        
+		dlog("Starting GDI object leak detection.")
+		dlog("Hooking GDI object allocation functions.")
     }
     else if( HT_HANDLE == g_Config::g_HookType )
     {
+		dlog("Starting Handle leak detection.")
+		dlog("Hooking Handle allocation functions.")
+
 		if(sm_pHookMgr->HookHandleAllocFuncs())
 		{
-			dlog("Handle alloc API's hooked")
+			dlog("Handle alloc API's hooked.")
 		}
     }
     else
     {
-		dlog("Invalid hook type")
-		dlog("Setting Handle API hook")
+		dlog("Invalid hook type.")
+		dlog("Setting Handle API hooks.")
 
 		g_Config::g_HookType = HT_HANDLE;
         if(sm_pHookMgr->HookHandleAllocFuncs())
 		{
-			dlog("Handle alloc API's hooked")
+			dlog("Handle alloc API's hooked.")
 		}
     }
  
+	dlog_v("Hooked API count",sm_pHookMgr->HookedFunctionCount())
     
     HANDLE hDumpEvent	 = CreateEvent( 0, TRUE, FALSE, DUMP_EVENT );
     HANDLE hMemRestEvent = CreateEvent( 0, TRUE, FALSE, CLEAR_LEAKS );
-    HANDLE hSymBolInfo   = CreateEvent( 0, TRUE, FALSE, SHOW_PDB_INFO );
-    HANDLE hArray[3] = { hDumpEvent, hMemRestEvent, hSymBolInfo };
+    
+    HANDLE hArray[2] = { hDumpEvent, hMemRestEvent };
+
     g_Config::g_bHooked = true; 
     while( 1 )
     {
-        DWORD dwWait = WaitForMultipleObjects( 3, hArray, FALSE, INFINITE );
+        DWORD dwWait = WaitForMultipleObjects( 2, hArray, FALSE, INFINITE );
         CSingleLock lockObj( &g_Config::SyncObj, TRUE );
         g_Config::g_bTrack = false;
         lockObj.Unlock();
         if( dwWait == WAIT_OBJECT_0 )
         {
+			dlog("Dumping leak trace")
             ResetEvent( hDumpEvent );
             DumpLeak();
+			dlog("Leak trace dumped")
         }
         else if( dwWait == WAIT_OBJECT_0 + 1)
         {
-            lockObj.Lock();
+            dlog("Clearing leak map")
+			lockObj.Lock();
             EmptyLeakMap();
             lockObj.Unlock();
             ResetEvent( hMemRestEvent );
             
         }
-        else if( dwWait == WAIT_OBJECT_0 + 2)
+        else
         {
-          ResetEvent( hSymBolInfo );
-        }
-        else if( dwWait == WAIT_OBJECT_0 + 3)// exit event
-        {
-            break;
+			dlog("Exiting")
+			break;
         }
         lockObj.Lock();
         g_Config::g_bTrack = true;
         lockObj.Unlock();
     }
+	
     CloseHandle( hDumpEvent );
     CloseHandle( hMemRestEvent );
-    CloseHandle( hSymBolInfo );
     return 0;
 }
 
-// CparasiteApp initialization
+// CParasiteApp initialization
 
-BOOL CparasiteApp::InitInstance()
+BOOL CParasiteApp::InitInstance()
 {
 	
 	HMODULE hHookDll = GetModuleHandleA( _T("parasite.dll"));
@@ -149,6 +160,39 @@ BOOL CparasiteApp::InitInstance()
 	return CWinApp::InitInstance();
 }
 
+bool CParasiteApp::Cleanup()
+{
+	dlog("Cleanup")
+	dlog("Unhooking all functions")
+	sm_pHookMgr->UnHookAllFuncs();
+
+	
+	if(sm_pHookMgr)
+		delete sm_pHookMgr;
+
+    g_Config::g_bHooked = false;
+    EmptyLeakMap();
+
+	
+	
+
+	return true;
+}
+int CParasiteApp::ExitInstance() 
+{
+    try
+    {   
+        // Restore the hooks
+		dlog("DLL_PROCESS_DETACH")
+		
+		Cleanup();
+    }
+    catch (...)
+    {
+        
+    }
+    return CWinApp::ExitInstance();
+}
 
 CString GetGDIHandleType( HGDIOBJ hObj, SIZE_T nType )
 {
@@ -400,24 +444,7 @@ void EmptyLeakMap()
     }
 	g_Config::m_MemMap.clear();
 }
-int CparasiteApp::ExitInstance() 
-{
-    try
-    {   
-        // Restore the hooks
-		dlog("DLL_PROCESS_DETACH")
-		dlog("Unhooking all functions")
 
-        g_Config::g_bHooked = false;
-        EmptyLeakMap();
-		sm_pHookMgr->UnHookAllFuncs();
-    }
-    catch (...)
-    {
-        
-    }
-    return CWinApp::ExitInstance();
-}
 
 void CopyStack(LPVOID lpExisting, LPVOID lpNew, int nType )
 {

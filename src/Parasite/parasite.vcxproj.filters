@@ -13,6 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{958d2480-380d-4784-8d97-824a61450464}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{0c71bcc9-bbc9-496d-919c-7135b60b50bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ApiHooks">
+      <UniqueIdentifier>{df5e5c93-46af-4728-ac0f-5baf39527da8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ApiHooks">
+      <UniqueIdentifier>{6cfb754a-3a6a-4af7-abc6-e97135d19017}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty">
+      <UniqueIdentifier>{e3c008f8-5443-4873-9c18-b18eb9fe5ce1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -24,23 +39,23 @@
     <ClCompile Include="ConfigLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\3rdParty\pugixml.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Common\common.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\LockMgr.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\ModuleInstance.cpp">
+      <Filter>Source Files\Common</Filter>
     </ClCompile>
     <ClCompile Include="ApiHooks\ApiHook.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LockMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleInstance.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\ApiHooks</Filter>
     </ClCompile>
     <ClCompile Include="parasite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\3rdParty\pugixml.cpp">
+      <Filter>3rdParty</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,29 +71,29 @@
     <ClInclude Include="ConfigLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\3rdParty\pugiconfig.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\3rdParty\pugixml.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ApiHooks\ApiHook.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LockMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SysUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModuleInstance.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="parasite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ApiHooks\ApiHook.h">
+      <Filter>Header Files\ApiHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\common.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\LockMgr.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ModuleInstance.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\SysUtils.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdParty\pugixml.hpp">
+      <Filter>3rdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdParty\pugiconfig.hpp">
+      <Filter>3rdParty</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

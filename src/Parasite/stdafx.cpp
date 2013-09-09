@@ -5,4 +5,4 @@
 #include "stdafx.h"
 
 
-bool g_bLog = false;
+int g_bLog = 0;

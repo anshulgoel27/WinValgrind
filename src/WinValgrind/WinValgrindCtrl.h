@@ -4,7 +4,7 @@
 
 
 
-const std::string sConfigTemplate = "<WinValgrind><!-- Type of HOOK --><MonitorType>MEMORY</MonitorType><!-- PDB Path --><PDBInfo><!-- Do not remove PDB path 1 & 2 --><PDBInfo1 path=\"test\" /><PDBInfo2 path=\"test\" /><!-- microsoft sysmbol server --><PDBInfo3 path=\"test\" /><!-- Add Monitored process symbol path --></PDBInfo></WinValgrind>";
+const std::string sConfigTemplate = "<WinValgrind><!-- Type of HOOK --><MonitorType>HANDLE</MonitorType><!-- PDB Path --><PDBInfo><!-- Do not remove PDB path 1 & 2 --><PDBInfo1 path=\"test\" /><PDBInfo2 path=\"test\" /><!-- microsoft sysmbol server --><PDBInfo3 path=\"test\" /><!-- Add Monitored process symbol path --></PDBInfo></WinValgrind>";
 
 class CWinValgrindCtrl
 {

@@ -41,22 +41,35 @@
 #include <string>
 #include "pugixml.hpp"
 #include <vector>
+
 #define DUMP_EVENT _T("_leak_dump_evt_")
 #define CLEAR_LEAKS _T("_clr_all_leaks_evt_")
-#define SHOW_PDB_INFO _T("_show_pdb_load_info_evt_" )
+#define EXIT_PARASITE_DLL _T("_exit_parasite_dll_evt_" )
 
-extern bool g_bLog;
+extern int g_bLog;
 
 #include <fstream>
 
-#define dlog(s) \
+#define dlog(text) \
 { \
-	if(g_bLog) \
+	if(g_bLog!=0) \
 	{ \
 		std::ofstream log(g_Config::sDllPath+"Debuglog.txt",std::ios::app); \
-		log << __FUNCTION__ << "::" << __LINE__ << "\t" << s << "\n"; \
+		log << __FUNCTION__ << "::" << __LINE__ << "\t" << text << "\n"; \
 		log.close(); \
 	}\
 }
+
+
+#define dlog_v(name,variable) \
+{ \
+	if(g_bLog!=0) \
+	{ \
+		std::ofstream log(g_Config::sDllPath+"Debuglog.txt",std::ios::app); \
+		log << __FUNCTION__ << "::" << __LINE__ << "\t" << name <<": " << variable << "\n"; \
+		log.close(); \
+	}\
+}
+
 
 #endif

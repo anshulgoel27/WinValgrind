@@ -11,23 +11,23 @@
 
 #include "resource.h"		// main symbols
 
-// CparasiteApp
+// CParasiteApp
 // See parasite.cpp for the implementation of this class
 //
-#include "ApiHooks\ApiHook.h"
-#include "common.h"
+#include <ApiHook.h>
+#include <common.h>
 
 
 
-class CparasiteApp : public CWinApp
+class CParasiteApp : public CWinApp
 {
 private:
 	static CApiHookMgr* sm_pHookMgr;
 protected:
 	static DWORD WINAPI DumpController( LPVOID pParam );
 public:
-	CparasiteApp();
-
+	CParasiteApp();
+	bool Cleanup();
 // Overrides
 public:
 	virtual BOOL InitInstance();

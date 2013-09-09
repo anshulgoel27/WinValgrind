@@ -1,16 +1,12 @@
 #include "..\stdafx.h"
+#include <common.h>
+#include <SysUtils.h>
+
 #include "ApiHook.h"
-#include "..\common.h"
-#include "..\SysUtils.h"
-#include "..\LockMgr.h"
 
 
 
-//---------------------------------------------------------------------------
-//
-// File scope constants and typedefs
-//
-//---------------------------------------------------------------------------
+
 typedef struct 
 {
 	char szCalleeModName[MAX_PATH]; 
@@ -29,55 +25,41 @@ const API_FUNC_ID MANDATORY_API_FUNCS[] =
 // This macro evaluates to the number of elements in MANDATORY_API_FUNCS
 #define NUMBER_OF_MANDATORY_API_FUNCS (sizeof(MANDATORY_API_FUNCS) / sizeof(MANDATORY_API_FUNCS[0])) 
 
-//---------------------------------------------------------------------------
-//
-// Static members
-//
-//---------------------------------------------------------------------------
 
+
+// Static members
 CHookedFunctions* CApiHookMgr::sm_pHookedFunctions = NULL;
 CCSWrapper        CApiHookMgr::sm_CritSec;
 
-//---------------------------------------------------------------------------
-// CApiHookMgr
-// 
-// Ctor
-//---------------------------------------------------------------------------
+
+// CApiHookMgr Ctor
 CApiHookMgr::CApiHookMgr()
 {
-	//
 	// Obtain the handle to the DLL which code executes
-	//
 	m_hmodThisInstance   = ModuleFromAddress(CApiHookMgr::MyGetProcAddress);
-	//
+	
 	// No system functions have been hooked up yet
-	//
 	m_bSystemFuncsHooked = FALSE;
-
+	// No handle alloc fucntions have been hooked up yet
 	m_bHandleFuncsHooked = FALSE;
-	//
+
 	// Create an instance of the map container
-	//
-	sm_pHookedFunctions  = new CHookedFunctions(this); 
+    sm_pHookedFunctions  = new CHookedFunctions(this); 
 }
 
-//---------------------------------------------------------------------------
-// ~CApiHookMgr
-// 
-// Dtor
-//---------------------------------------------------------------------------
 
+// ~CApiHookMgr
 CApiHookMgr::~CApiHookMgr()
 {
 	UnHookAllFuncs();
 	delete sm_pHookedFunctions;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // HookSystemFuncs
 // 
 // Hook all needed system functions in order to trap loading libraries
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CApiHookMgr::HookSystemFuncs()
 {
 	BOOL bResult;
@@ -115,130 +97,450 @@ BOOL CApiHookMgr::HookSystemFuncs()
 	return m_bSystemFuncsHooked;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// HookHandleAllocFuncs
+// 
+// Hook all handle alloc functions in order to trace handle leaks
+//////////////////////////////////////////////////////////////////////////////
 BOOL CApiHookMgr::HookHandleAllocFuncs()
 {
 	if (TRUE != m_bHandleFuncsHooked)
 	{
-		REGISTER_HOOK(CreateEventA,Kernel32);
-		REGISTER_HOOK(CreateEventW,Kernel32 );
-		REGISTER_HOOK(CreateEventExA,Kernel32 );
-		REGISTER_HOOK(CreateEventExW,Kernel32 );
-		REGISTER_HOOK(OpenEventA,Kernel32 );
-		REGISTER_HOOK(OpenEventW,Kernel32 );
-		REGISTER_HOOK(CreateMutexA,Kernel32 );
-		REGISTER_HOOK(CreateMutexW,Kernel32 );
-		REGISTER_HOOK(CreateMutexExA,Kernel32 );
-		REGISTER_HOOK(CreateMutexExW,Kernel32 );
-		REGISTER_HOOK(OpenMutexA,Kernel32 );
-		REGISTER_HOOK(OpenMutexW,Kernel32 );
-		REGISTER_HOOK(CreateSemaphoreA,Kernel32 );
-		REGISTER_HOOK(CreateSemaphoreW,Kernel32 );
-		REGISTER_HOOK(CreateSemaphoreExA,Kernel32 );
-		REGISTER_HOOK(CreateSemaphoreExW,Kernel32 );
-		REGISTER_HOOK(OpenSemaphoreA,Kernel32 );
-		REGISTER_HOOK(OpenSemaphoreW,Kernel32 );
-		REGISTER_HOOK(CreateWaitableTimerA,Kernel32 );
-		REGISTER_HOOK(CreateWaitableTimerW,Kernel32 );
-		REGISTER_HOOK(CreateWaitableTimerExA,Kernel32 );
-		REGISTER_HOOK(CreateWaitableTimerExW,Kernel32 );
-		REGISTER_HOOK(OpenWaitableTimerA,Kernel32 );
-		REGISTER_HOOK(OpenWaitableTimerW,Kernel32 );
-		REGISTER_HOOK(CreateFileA,Kernel32 );
-		REGISTER_HOOK(CreateFileW,Kernel32 );
-		REGISTER_HOOK(CreateFileTransactedA,Kernel32 );
-		REGISTER_HOOK(CreateFileTransactedW,Kernel32 );
-		REGISTER_HOOK(FindFirstFileA,Kernel32 );
-		REGISTER_HOOK(FindFirstFileW,Kernel32 );
-		REGISTER_HOOK(FindFirstFileExA,Kernel32 );
-		REGISTER_HOOK(FindFirstFileExW,Kernel32 );
-		REGISTER_HOOK(FindFirstFileExW,Kernel32 );
-		REGISTER_HOOK(FindFirstFileNameW,Kernel32 );
-		REGISTER_HOOK(FindFirstFileTransactedA,Kernel32 );
-		REGISTER_HOOK(FindFirstFileTransactedW,Kernel32 );
-		REGISTER_HOOK(FindFirstStreamTransactedW,Kernel32 );
-		REGISTER_HOOK(FindFirstStreamW,Kernel32 );
-		REGISTER_HOOK(FindClose,Kernel32 );
-		REGISTER_HOOK(OpenFileById,Kernel32 );
-		REGISTER_HOOK(ReOpenFile,Kernel32 );
-		REGISTER_HOOK(CreateIoCompletionPort,Kernel32 );
-		REGISTER_HOOK(CreateRestrictedToken,Advapi32 );
-		REGISTER_HOOK(DuplicateToken,Advapi32 );
-		REGISTER_HOOK(DuplicateTokenEx,Advapi32 );
-		REGISTER_HOOK(OpenProcessToken,Advapi32 );
-		REGISTER_HOOK(OpenThreadToken,Advapi32 );
-		REGISTER_HOOK(FindFirstChangeNotificationA,Kernel32 );
-		REGISTER_HOOK(FindFirstChangeNotificationW,Kernel32 );
-		REGISTER_HOOK(FindCloseChangeNotification,Kernel32 );
-		REGISTER_HOOK(CreateMemoryResourceNotification,Kernel32 );
-		REGISTER_HOOK(CreateFileMappingA,Kernel32 );
-		REGISTER_HOOK(CreateFileMappingW,Kernel32 );
-		REGISTER_HOOK(CreateFileMappingNumaA,Kernel32 );
-		REGISTER_HOOK(CreateFileMappingNumaW,Kernel32 );
-		REGISTER_HOOK(OpenFileMappingA,Kernel32 );
-		REGISTER_HOOK(OpenFileMappingW,Kernel32 );
-		REGISTER_HOOK(HeapCreate,Kernel32 );
-		REGISTER_HOOK(HeapDestroy,Kernel32 );
-		REGISTER_HOOK(GlobalAlloc,Kernel32 );
-		REGISTER_HOOK(GlobalReAlloc,Kernel32 );
-		REGISTER_HOOK(GlobalFree,Kernel32 );
-		REGISTER_HOOK(LocalAlloc,Kernel32 );
-		REGISTER_HOOK(LocalReAlloc,Kernel32 );
-		REGISTER_HOOK(LocalFree,Kernel32 );
-		REGISTER_HOOK(CreateProcessA,Kernel32 );
-		REGISTER_HOOK(CreateProcessW,Kernel32 );
-		REGISTER_HOOK(CreateProcessAsUserA,Advapi32 );
-		REGISTER_HOOK(CreateProcessAsUserW,Advapi32 );
-		REGISTER_HOOK(CreateProcessWithLogonW,Advapi32 );
-		REGISTER_HOOK(CreateProcessWithTokenW,Advapi32 );
-		REGISTER_HOOK(OpenProcess,Kernel32 );
-		REGISTER_HOOK(CreateThread,Kernel32 );
-		REGISTER_HOOK(CreateRemoteThread,Kernel32 );
-		REGISTER_HOOK(OpenThread,Kernel32 );
-		REGISTER_HOOK(CreateJobObjectA,Kernel32 );
-		REGISTER_HOOK(CreateJobObjectW,Kernel32 );
-		REGISTER_HOOK(CreateMailslotA,Kernel32 );
-		REGISTER_HOOK(CreateMailslotW,Kernel32 );
-		REGISTER_HOOK(CreatePipe,Kernel32 );
-		REGISTER_HOOK(CreateNamedPipeA,Kernel32 );
-		REGISTER_HOOK(CreateNamedPipeW,Kernel32 );
-		REGISTER_HOOK(RegCreateKeyExA,Advapi32 );
-		REGISTER_HOOK(RegCreateKeyExW,Advapi32 );
-		REGISTER_HOOK(RegCreateKeyTransactedA,Kernel32 );
-		REGISTER_HOOK(RegCreateKeyTransactedW,Kernel32 );
-		REGISTER_HOOK(RegOpenCurrentUser,Kernel32 );
-		REGISTER_HOOK(RegOpenKeyA,Kernel32 );
-		REGISTER_HOOK(RegOpenKeyW,Kernel32 );
-		REGISTER_HOOK(RegOpenKeyExA,Kernel32 );
-		REGISTER_HOOK(RegOpenKeyExW,Kernel32 );
-		REGISTER_HOOK(RegOpenKeyTransactedA,Kernel32 );
-		REGISTER_HOOK(RegOpenKeyTransactedW,Kernel32 );
-		REGISTER_HOOK(RegOpenUserClassesRoot,Kernel32 );
-		REGISTER_HOOK(RegCreateKeyA,Kernel32 );
-		REGISTER_HOOK(RegCreateKeyW,Kernel32 );
-		REGISTER_HOOK(RegCloseKey,Kernel32 );
-		REGISTER_HOOK(DuplicateHandle,Kernel32 );
-		REGISTER_HOOK(CloseHandle,Kernel32 );
+		HOOK_IMPORT(CreateEventA,Kernel32);
+		HOOK_IMPORT(CreateEventW,Kernel32 );
+		HOOK_IMPORT(CreateEventExA,Kernel32 );
+		HOOK_IMPORT(CreateEventExW,Kernel32 );
+		HOOK_IMPORT(OpenEventA,Kernel32 );
+		HOOK_IMPORT(OpenEventW,Kernel32 );
+		HOOK_IMPORT(CreateMutexA,Kernel32 );
+		HOOK_IMPORT(CreateMutexW,Kernel32 );
+		HOOK_IMPORT(CreateMutexExA,Kernel32 );
+		HOOK_IMPORT(CreateMutexExW,Kernel32 );
+		HOOK_IMPORT(OpenMutexA,Kernel32 );
+		HOOK_IMPORT(OpenMutexW,Kernel32 );
+		HOOK_IMPORT(CreateSemaphoreA,Kernel32 );
+		HOOK_IMPORT(CreateSemaphoreW,Kernel32 );
+		HOOK_IMPORT(CreateSemaphoreExA,Kernel32 );
+		HOOK_IMPORT(CreateSemaphoreExW,Kernel32 );
+		HOOK_IMPORT(OpenSemaphoreA,Kernel32 );
+		HOOK_IMPORT(OpenSemaphoreW,Kernel32 );
+		HOOK_IMPORT(CreateWaitableTimerA,Kernel32 );
+		HOOK_IMPORT(CreateWaitableTimerW,Kernel32 );
+		HOOK_IMPORT(CreateWaitableTimerExA,Kernel32 );
+		HOOK_IMPORT(CreateWaitableTimerExW,Kernel32 );
+		HOOK_IMPORT(OpenWaitableTimerA,Kernel32 );
+		HOOK_IMPORT(OpenWaitableTimerW,Kernel32 );
+		HOOK_IMPORT(CreateFileA,Kernel32 );
+		HOOK_IMPORT(CreateFileW,Kernel32 );
+		HOOK_IMPORT(CreateFileTransactedA,Kernel32 );
+		HOOK_IMPORT(CreateFileTransactedW,Kernel32 );
+		HOOK_IMPORT(FindFirstFileA,Kernel32 );
+		HOOK_IMPORT(FindFirstFileW,Kernel32 );
+		HOOK_IMPORT(FindFirstFileExA,Kernel32 );
+		HOOK_IMPORT(FindFirstFileExW,Kernel32 );
+		HOOK_IMPORT(FindFirstFileExW,Kernel32 );
+		HOOK_IMPORT(FindFirstFileNameW,Kernel32 );
+		HOOK_IMPORT(FindFirstFileTransactedA,Kernel32 );
+		HOOK_IMPORT(FindFirstFileTransactedW,Kernel32 );
+		HOOK_IMPORT(FindFirstStreamTransactedW,Kernel32 );
+		HOOK_IMPORT(FindFirstStreamW,Kernel32 );
+		HOOK_IMPORT(FindClose,Kernel32 );
+		HOOK_IMPORT(OpenFileById,Kernel32 );
+		HOOK_IMPORT(ReOpenFile,Kernel32 );
+		HOOK_IMPORT(CreateIoCompletionPort,Kernel32 );
+		HOOK_IMPORT(CreateRestrictedToken,Advapi32 );
+		HOOK_IMPORT(DuplicateToken,Advapi32 );
+		HOOK_IMPORT(DuplicateTokenEx,Advapi32 );
+		HOOK_IMPORT(OpenProcessToken,Advapi32 );
+		HOOK_IMPORT(OpenThreadToken,Advapi32 );
+		HOOK_IMPORT(FindFirstChangeNotificationA,Kernel32 );
+		HOOK_IMPORT(FindFirstChangeNotificationW,Kernel32 );
+		HOOK_IMPORT(FindCloseChangeNotification,Kernel32 );
+		HOOK_IMPORT(CreateMemoryResourceNotification,Kernel32 );
+		HOOK_IMPORT(CreateFileMappingA,Kernel32 );
+		HOOK_IMPORT(CreateFileMappingW,Kernel32 );
+		HOOK_IMPORT(CreateFileMappingNumaA,Kernel32 );
+		HOOK_IMPORT(CreateFileMappingNumaW,Kernel32 );
+		HOOK_IMPORT(OpenFileMappingA,Kernel32 );
+		HOOK_IMPORT(OpenFileMappingW,Kernel32 );
+		HOOK_IMPORT(HeapCreate,Kernel32 );
+		HOOK_IMPORT(HeapDestroy,Kernel32 );
+		HOOK_IMPORT(GlobalAlloc,Kernel32 );
+		HOOK_IMPORT(GlobalReAlloc,Kernel32 );
+		HOOK_IMPORT(GlobalFree,Kernel32 );
+		HOOK_IMPORT(LocalAlloc,Kernel32 );
+		HOOK_IMPORT(LocalReAlloc,Kernel32 );
+		HOOK_IMPORT(LocalFree,Kernel32 );
+		HOOK_IMPORT(CreateProcessA,Kernel32 );
+		HOOK_IMPORT(CreateProcessW,Kernel32 );
+		HOOK_IMPORT(CreateProcessAsUserA,Advapi32 );
+		HOOK_IMPORT(CreateProcessAsUserW,Advapi32 );
+		HOOK_IMPORT(CreateProcessWithLogonW,Advapi32 );
+		HOOK_IMPORT(CreateProcessWithTokenW,Advapi32 );
+		HOOK_IMPORT(OpenProcess,Kernel32 );
+		HOOK_IMPORT(CreateThread,Kernel32 );
+		HOOK_IMPORT(CreateRemoteThread,Kernel32 );
+		HOOK_IMPORT(OpenThread,Kernel32 );
+		HOOK_IMPORT(CreateJobObjectA,Kernel32 );
+		HOOK_IMPORT(CreateJobObjectW,Kernel32 );
+		HOOK_IMPORT(CreateMailslotA,Kernel32 );
+		HOOK_IMPORT(CreateMailslotW,Kernel32 );
+		HOOK_IMPORT(CreatePipe,Kernel32 );
+		HOOK_IMPORT(CreateNamedPipeA,Kernel32 );
+		HOOK_IMPORT(CreateNamedPipeW,Kernel32 );
+		HOOK_IMPORT(RegCreateKeyExA,Advapi32 );
+		HOOK_IMPORT(RegCreateKeyExW,Advapi32 );
+		HOOK_IMPORT(RegCreateKeyTransactedA,Kernel32 );
+		HOOK_IMPORT(RegCreateKeyTransactedW,Kernel32 );
+		HOOK_IMPORT(RegOpenCurrentUser,Kernel32 );
+		HOOK_IMPORT(RegOpenKeyA,Kernel32 );
+		HOOK_IMPORT(RegOpenKeyW,Kernel32 );
+		HOOK_IMPORT(RegOpenKeyExA,Kernel32 );
+		HOOK_IMPORT(RegOpenKeyExW,Kernel32 );
+		HOOK_IMPORT(RegOpenKeyTransactedA,Kernel32 );
+		HOOK_IMPORT(RegOpenKeyTransactedW,Kernel32 );
+		HOOK_IMPORT(RegOpenUserClassesRoot,Kernel32 );
+		HOOK_IMPORT(RegCreateKeyA,Kernel32 );
+		HOOK_IMPORT(RegCreateKeyW,Kernel32 );
+		HOOK_IMPORT(RegCloseKey,Kernel32 );
+		HOOK_IMPORT(DuplicateHandle,Kernel32 );
+		HOOK_IMPORT(CloseHandle,Kernel32 );
 
-		//////////////////////////////////v3 additions//////////////////////////////////////////////////
-		//// Timers
-		//REGISTER_HOOK(CreateTimerQueue,Kernel32 );
-		//REGISTER_HOOK(CreateTimerQueueTimer,Kernel32 );
-		//REGISTER_HOOK(DeleteTimerQueueTimer,Kernel32 );
-		//REGISTER_HOOK(DeleteTimerQueueEx,Kernel32 );
-		//REGISTER_HOOK(DeleteTimerQueue,Kernel32 );
+		HOOK_IMPORT(CreateTimerQueue,Kernel32 );
+		HOOK_IMPORT(CreateTimerQueueTimer,Kernel32 );
+		HOOK_IMPORT(DeleteTimerQueueTimer,Kernel32 );
+		HOOK_IMPORT(DeleteTimerQueueEx,Kernel32 );
+		HOOK_IMPORT(DeleteTimerQueue,Kernel32 );
 
-		//REGISTER_HOOK(InitializeCriticalSection,Kernel32 );
-		//REGISTER_HOOK(InitializeCriticalSectionEx,Kernel32 );
-		//REGISTER_HOOK(InitializeCriticalSectionAndSpinCount,Kernel32 );
-		//REGISTER_HOOK(DeleteCriticalSection,Kernel32 );
+		HOOK_IMPORT(InitializeCriticalSection,Kernel32 );
+		HOOK_IMPORT(InitializeCriticalSectionEx,Kernel32 );
+		HOOK_IMPORT(InitializeCriticalSectionAndSpinCount,Kernel32 );
+		HOOK_IMPORT(DeleteCriticalSection,Kernel32 );
+
 		m_bHandleFuncsHooked = TRUE;
 	}
 	return m_bHandleFuncsHooked;
 }
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// UnHookAllFuncs
+// 
+// Unhook all functions and restore original ones
+//////////////////////////////////////////////////////////////////////////////
+void CApiHookMgr::UnHookAllFuncs()
+{
+	if (TRUE == m_bSystemFuncsHooked)
+	{
+		CHookedFunction* pHook;
+		CHookedFunctions::const_iterator itr;
+		for (itr = sm_pHookedFunctions->begin(); 
+			itr != sm_pHookedFunctions->end(); 
+			++itr)
+		{
+			pHook = itr->second;
+			pHook->UnHookImport();
+			delete pHook;
+		} // for
+		sm_pHookedFunctions->clear();
+		m_bSystemFuncsHooked = FALSE;
+	} // if
+}
+
+//
+// Indicates whether there is hooked function
+//
+BOOL CApiHookMgr::AreThereHookedFunctions()
+{
+	return (sm_pHookedFunctions->size() > 0);
+}
+
+
+//
+// Hooked API count
+//
+size_t CApiHookMgr::HookedFunctionCount() const
+{
+	return sm_pHookedFunctions->size();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HookImport
+//
+// Hook up an API function
+//////////////////////////////////////////////////////////////////////////////
+BOOL CApiHookMgr::HookImport(
+	PCSTR pszCalleeModName, 
+	PCSTR pszFuncName, 
+	PROC  pfnHook
+	)
+{
+	CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
+	
+	BOOL                  bResult = FALSE;
+	PROC                  pfnOrig = NULL;
+	try
+	{
+		dlog(pszFuncName)
+		if (!sm_pHookedFunctions->GetHookedFunction(
+				pszCalleeModName, 
+				pszFuncName
+				))
+		{
+			pfnOrig = GetProcAddressWindows(
+				::GetModuleHandleA(pszCalleeModName),
+				pszFuncName
+				);
+			//
+			// It's possible that the requested module is not loaded yet
+			// so lets try to load it.
+			//
+			if (NULL == pfnOrig)
+			{
+				HMODULE hmod = ::LoadLibraryA(pszCalleeModName);
+				if (NULL != hmod)
+					pfnOrig = GetProcAddressWindows(
+						::GetModuleHandleA(pszCalleeModName),
+						pszFuncName
+						);
+			} // if
+			if (NULL != pfnOrig)
+				bResult = AddHook(
+					pszCalleeModName, 
+					pszFuncName, 
+					pfnOrig,
+					pfnHook
+					);
+		} // if
+	}
+	catch(...)
+	{
+
+	} // try..catch
+
+	return bResult;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// UnHookImport
+//
+// Restores original API function address in IAT
+//////////////////////////////////////////////////////////////////////////////
+BOOL CApiHookMgr::UnHookImport(
+	PCSTR pszCalleeModName, 
+	PCSTR pszFuncName
+	)
+{
+	CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
+
+	BOOL bResult = TRUE;
+	try
+	{
+		bResult = RemoveHook(pszCalleeModName, pszFuncName);
+	}
+	catch (...)
+	{
+	}
+	return bResult;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// AddHook
+//
+// Add a hook to the internally supported container
+//////////////////////////////////////////////////////////////////////////////
+BOOL CApiHookMgr::AddHook(
+	PCSTR pszCalleeModName, 
+	PCSTR pszFuncName, 
+	PROC  pfnOrig,
+	PROC  pfnHook
+	)
+{
+	BOOL             bResult = FALSE;
+	CHookedFunction* pHook   = NULL;
+
+	if (!sm_pHookedFunctions->GetHookedFunction(
+			pszCalleeModName, 
+			pszFuncName
+			))
+	{
+		pHook = new CHookedFunction(
+			sm_pHookedFunctions,
+			pszCalleeModName, 
+			pszFuncName, 
+			pfnOrig,
+			pfnHook
+			);
+		// We must create the hook and insert it in the container
+		pHook->HookImport();
+		bResult = sm_pHookedFunctions->AddHook(pHook);
+	} // if
+
+	return bResult;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// RemoveHook
+//
+// Remove a hook from the internally supported container
+//////////////////////////////////////////////////////////////////////////////
+BOOL CApiHookMgr::RemoveHook(
+	PCSTR pszCalleeModName, 
+	PCSTR pszFuncName
+	)
+{
+	BOOL             bResult = FALSE;
+	CHookedFunction *pHook   = NULL;
+
+	pHook = sm_pHookedFunctions->GetHookedFunction(
+		pszCalleeModName, 
+		pszFuncName
+		);
+	if ( NULL != pHook )
+	{
+		bResult = pHook->UnHookImport();
+		if ( bResult )
+		{
+			bResult = sm_pHookedFunctions->RemoveHook( pHook );
+			if ( bResult )
+				delete pHook;
+		} // if
+	} // if
+
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// HackModuleOnLoad
+//
+// Used when a DLL is newly loaded after hooking a function
+//////////////////////////////////////////////////////////////////////////////
+void WINAPI CApiHookMgr::HackModuleOnLoad(HMODULE hmod, DWORD dwFlags)
+{
+	//
+	// If a new module is loaded, just hook it
+	//
+	if ((hmod != NULL) && ((dwFlags & LOAD_LIBRARY_AS_DATAFILE) == 0)) 
+	{
+		CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
+		
+		CHookedFunction* pHook;
+		CHookedFunctions::const_iterator itr;
+		for (itr = sm_pHookedFunctions->begin(); 
+			itr != sm_pHookedFunctions->end(); 
+			++itr)
+		{
+			pHook = itr->second;
+			pHook->ReplaceInOneModule(
+				pHook->Get_CalleeModName(), 
+				pHook->Get_pfnOrig(), 
+				pHook->Get_pfnHook(), 
+				hmod
+				);
+		} // for
+	} // if
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// 
+// Win32 API hooks
+//
+//////////////////////////////////////////////////////////////////////////////
+
+
+#ifndef _SYS_API_HOOKS_
+
+#define _SYS_API_HOOKS_
+/////////////////////////////////////////////////////////////////////////////
+//
+// System API hooks 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+HMODULE WINAPI CApiHookMgr::MyLoadLibraryA(PCSTR pszModuleName)
+{
+	HMODULE hmod = ::LoadLibraryA(pszModuleName);
+	HackModuleOnLoad(hmod, 0);
+
+	return hmod;
+}
+
+
+HMODULE WINAPI CApiHookMgr::MyLoadLibraryW(PCWSTR pszModuleName)
+{
+	HMODULE hmod = ::LoadLibraryW(pszModuleName);
+	HackModuleOnLoad(hmod, 0);
+
+	return hmod;
+}
+
+
+HMODULE WINAPI CApiHookMgr::MyLoadLibraryExA(
+	PCSTR  pszModuleName, 
+	HANDLE hFile, 
+	DWORD dwFlags)
+{
+	HMODULE hmod = ::LoadLibraryExA(pszModuleName, hFile, dwFlags);
+	HackModuleOnLoad(hmod, 0);
+
+	return hmod;
+}
+
+HMODULE WINAPI CApiHookMgr::MyLoadLibraryExW(
+	PCWSTR pszModuleName, 
+	HANDLE hFile, 
+	DWORD dwFlags)
+{
+	HMODULE hmod = ::LoadLibraryExW(pszModuleName, hFile, dwFlags);
+	HackModuleOnLoad(hmod, 0);
+
+	return hmod;
+}
+
+
+FARPROC WINAPI CApiHookMgr::MyGetProcAddress(HMODULE hmod, PCSTR pszProcName)
+{
+	// It is possible that multiple threads will call hooked GetProcAddress() 
+	// API, therefore we should make it thread safe because it accesses sm_pHookedFunctions 
+	// shared container.
+	CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
+	//
+	// Get the original address of the function
+	//
+	FARPROC pfn = GetProcAddressWindows(hmod, pszProcName);
+	//
+	// Attempt to locate if the function has been hijacked
+	//
+	CHookedFunction* pFuncHook = 
+		sm_pHookedFunctions->GetHookedFunction(
+			hmod, 
+			pszProcName
+			);
+
+	if (NULL != pFuncHook)
+		//
+		// The address to return matches an address we want to hook
+		// Return the hook function address instead
+		//
+		pfn = pFuncHook->Get_pfnHook();
+
+	return pfn;
+}
+
+#endif _SYS_API_HOOKS_
+
+
+#ifndef _HANDLE_ALLOC_FUNCS_
+
+#define _HANDLE_ALLOC_FUNCS_
 //////////////////////////////////////////////////////////////////////////
-// Handle functions
+// 
+// Handle allocation functions
+//
 //////////////////////////////////////////////////////////////////////////
 
 HANDLE WINAPI CApiHookMgr::MyGlobalAlloc( UINT uFlags, SIZE_T dwBytes )
@@ -308,7 +610,6 @@ HLOCAL WINAPI CApiHookMgr::MyLocalFree(HLOCAL hMem )
 
 HANDLE WINAPI CApiHookMgr::MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes,BOOL bManualReset,BOOL bInitialState,LPCSTR lpName)
 {
-	dlog("In MyCreateEventA")
 	HANDLE hHandle =  CreateEventA(lpEventAttributes, bManualReset, bInitialState, lpName);
     CreateCallStack( hHandle, TYPE_EVENT_HANDLE );
     return hHandle;
@@ -928,7 +1229,6 @@ LSTATUS WINAPI CApiHookMgr::MyRegCloseKey ( HKEY hKey )
     return bRet;
 }
 
-////////////////////////////////start - v3 additions//////////////////////////////////////////////////
 // Timers
 HANDLE WINAPI CApiHookMgr::MyCreateTimerQueue(void)
 {
@@ -998,7 +1298,6 @@ void WINAPI CApiHookMgr::MyDeleteCriticalSection( LPCRITICAL_SECTION lpCriticalS
     
 }
 
-////////////////////////////////end - v3 additions//////////////////////////////////////////////////
 
 BOOL   WINAPI CApiHookMgr::MyDuplicateHandle(HANDLE hSourceProcessHandle,HANDLE hSourceHandle,HANDLE hTargetProcessHandle,LPHANDLE lpTargetHandle,DWORD dwDesiredAccess,BOOL bInheritHandle,DWORD dwOptions)
 {
@@ -1023,322 +1322,14 @@ BOOL   WINAPI CApiHookMgr::MyCloseHandle( HANDLE hObject )
 
 }
 
-
-//---------------------------------------------------------------------------
-// UnHookAllFuncs
-// 
-// Unhook all functions and restore original ones
-//---------------------------------------------------------------------------
-void CApiHookMgr::UnHookAllFuncs()
-{
-	if (TRUE == m_bSystemFuncsHooked)
-	{
-		CHookedFunction* pHook;
-		CHookedFunctions::const_iterator itr;
-		for (itr = sm_pHookedFunctions->begin(); 
-			itr != sm_pHookedFunctions->end(); 
-			++itr)
-		{
-			pHook = itr->second;
-			pHook->UnHookImport();
-			delete pHook;
-		} // for
-		sm_pHookedFunctions->clear();
-		m_bSystemFuncsHooked = FALSE;
-	} // if
-}
-
-//
-// Indicates whether there is hooked function
-//
-BOOL CApiHookMgr::AreThereHookedFunctions()
-{
-	return (sm_pHookedFunctions->size() > 0);
-}
+#endif // _HANDLE_ALLOC_FUNCS_
 
 
-//---------------------------------------------------------------------------
-// HookImport
-//
-// Hook up an API function
-//---------------------------------------------------------------------------
-BOOL CApiHookMgr::HookImport(
-	PCSTR pszCalleeModName, 
-	PCSTR pszFuncName, 
-	PROC  pfnHook
-	)
-{
-	CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
-	
-	BOOL                  bResult = FALSE;
-	PROC                  pfnOrig = NULL;
-	try
-	{
-		dlog(pszFuncName)
-		if (!sm_pHookedFunctions->GetHookedFunction(
-				pszCalleeModName, 
-				pszFuncName
-				))
-		{
-			pfnOrig = GetProcAddressWindows(
-				::GetModuleHandleA(pszCalleeModName),
-				pszFuncName
-				);
-			//
-			// It's possible that the requested module is not loaded yet
-			// so lets try to load it.
-			//
-			if (NULL == pfnOrig)
-			{
-				HMODULE hmod = ::LoadLibraryA(pszCalleeModName);
-				if (NULL != hmod)
-					pfnOrig = GetProcAddressWindows(
-						::GetModuleHandleA(pszCalleeModName),
-						pszFuncName
-						);
-			} // if
-			if (NULL != pfnOrig)
-				bResult = AddHook(
-					pszCalleeModName, 
-					pszFuncName, 
-					pfnOrig,
-					pfnHook
-					);
-		} // if
-	}
-	catch(...)
-	{
-
-	} // try..catch
-
-	return bResult;
-}
-
-//---------------------------------------------------------------------------
-// UnHookImport
-//
-// Restores original API function address in IAT
-//---------------------------------------------------------------------------
-BOOL CApiHookMgr::UnHookImport(
-	PCSTR pszCalleeModName, 
-	PCSTR pszFuncName
-	)
-{
-	CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
-
-	BOOL bResult = TRUE;
-	try
-	{
-		bResult = RemoveHook(pszCalleeModName, pszFuncName);
-	}
-	catch (...)
-	{
-	}
-	return bResult;
-}
-
-//---------------------------------------------------------------------------
-// AddHook
-//
-// Add a hook to the internally supported container
-//---------------------------------------------------------------------------
-BOOL CApiHookMgr::AddHook(
-	PCSTR pszCalleeModName, 
-	PCSTR pszFuncName, 
-	PROC  pfnOrig,
-	PROC  pfnHook
-	)
-{
-	BOOL             bResult = FALSE;
-	CHookedFunction* pHook   = NULL;
-
-	if (!sm_pHookedFunctions->GetHookedFunction(
-			pszCalleeModName, 
-			pszFuncName
-			))
-	{
-		pHook = new CHookedFunction(
-			sm_pHookedFunctions,
-			pszCalleeModName, 
-			pszFuncName, 
-			pfnOrig,
-			pfnHook
-			);
-		// We must create the hook and insert it in the container
-		pHook->HookImport();
-		bResult = sm_pHookedFunctions->AddHook(pHook);
-	} // if
-
-	return bResult;
-}
-
-//---------------------------------------------------------------------------
-// RemoveHook
-//
-// Remove a hook from the internally supported container
-//---------------------------------------------------------------------------
-BOOL CApiHookMgr::RemoveHook(
-	PCSTR pszCalleeModName, 
-	PCSTR pszFuncName
-	)
-{
-	BOOL             bResult = FALSE;
-	CHookedFunction *pHook   = NULL;
-
-	pHook = sm_pHookedFunctions->GetHookedFunction(
-		pszCalleeModName, 
-		pszFuncName
-		);
-	if ( NULL != pHook )
-	{
-		bResult = pHook->UnHookImport();
-		if ( bResult )
-		{
-			bResult = sm_pHookedFunctions->RemoveHook( pHook );
-			if ( bResult )
-				delete pHook;
-		} // if
-	} // if
-
-	return bResult;
-}
-
-
-//---------------------------------------------------------------------------
-// HackModuleOnLoad
-//
-// Used when a DLL is newly loaded after hooking a function
-//---------------------------------------------------------------------------
-void WINAPI CApiHookMgr::HackModuleOnLoad(HMODULE hmod, DWORD dwFlags)
-{
-	//
-	// If a new module is loaded, just hook it
-	//
-	if ((hmod != NULL) && ((dwFlags & LOAD_LIBRARY_AS_DATAFILE) == 0)) 
-	{
-		CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
-		
-		CHookedFunction* pHook;
-		CHookedFunctions::const_iterator itr;
-		for (itr = sm_pHookedFunctions->begin(); 
-			itr != sm_pHookedFunctions->end(); 
-			++itr)
-		{
-			pHook = itr->second;
-			pHook->ReplaceInOneModule(
-				pHook->Get_CalleeModName(), 
-				pHook->Get_pfnOrig(), 
-				pHook->Get_pfnHook(), 
-				hmod
-				);
-		} // for
-	} // if
-}
-
-//---------------------------------------------------------------------------
-//
-// System API hooks prototypes
-//
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// CApiHookMgr::CApiHookMgr::MyLoadLibraryA
-//
-// 
-//---------------------------------------------------------------------------
-HMODULE WINAPI CApiHookMgr::MyLoadLibraryA(PCSTR pszModuleName)
-{
-	dlog("In MyLoadLibraryA")
-	HMODULE hmod = ::LoadLibraryA(pszModuleName);
-	HackModuleOnLoad(hmod, 0);
-
-	return hmod;
-}
-
-//---------------------------------------------------------------------------
-// CApiHookMgr::CApiHookMgr::MyLoadLibraryW
-//
-// 
-//---------------------------------------------------------------------------
-HMODULE WINAPI CApiHookMgr::MyLoadLibraryW(PCWSTR pszModuleName)
-{
-	HMODULE hmod = ::LoadLibraryW(pszModuleName);
-	HackModuleOnLoad(hmod, 0);
-
-	return hmod;
-}
-
-//---------------------------------------------------------------------------
-// CApiHookMgr::CApiHookMgr::MyLoadLibraryExA
-//
-// 
-//---------------------------------------------------------------------------
-HMODULE WINAPI CApiHookMgr::MyLoadLibraryExA(
-	PCSTR  pszModuleName, 
-	HANDLE hFile, 
-	DWORD dwFlags)
-{
-	HMODULE hmod = ::LoadLibraryExA(pszModuleName, hFile, dwFlags);
-	HackModuleOnLoad(hmod, 0);
-
-	return hmod;
-}
-
-//---------------------------------------------------------------------------
-// CApiHookMgr::CApiHookMgr::MyLoadLibraryExW
-//
-// 
-//---------------------------------------------------------------------------
-HMODULE WINAPI CApiHookMgr::MyLoadLibraryExW(
-	PCWSTR pszModuleName, 
-	HANDLE hFile, 
-	DWORD dwFlags)
-{
-	HMODULE hmod = ::LoadLibraryExW(pszModuleName, hFile, dwFlags);
-	HackModuleOnLoad(hmod, 0);
-
-	return hmod;
-}
-
-//---------------------------------------------------------------------------
-// CApiHookMgr::CApiHookMgr::MyGetProcAddress
-//
-// 
-//---------------------------------------------------------------------------
-FARPROC WINAPI CApiHookMgr::MyGetProcAddress(HMODULE hmod, PCSTR pszProcName)
-{
-	// It is possible that multiple threads will call hooked GetProcAddress() 
-	// API, therefore we should make it thread safe because it accesses sm_pHookedFunctions 
-	// shared container.
-	CLockMgr<CCSWrapper>  lockMgr(sm_CritSec, TRUE);
-	//
-	// Get the original address of the function
-	//
-	FARPROC pfn = GetProcAddressWindows(hmod, pszProcName);
-	//
-	// Attempt to locate if the function has been hijacked
-	//
-	CHookedFunction* pFuncHook = 
-		sm_pHookedFunctions->GetHookedFunction(
-			hmod, 
-			pszProcName
-			);
-
-	if (NULL != pFuncHook)
-		//
-		// The address to return matches an address we want to hook
-		// Return the hook function address instead
-		//
-		pfn = pFuncHook->Get_pfnHook();
-
-	return pfn;
-}
-
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // GetProcAddressWindows
 //
 // Returns original address of the API function
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 FARPROC WINAPI CApiHookMgr::GetProcAddressWindows(HMODULE hmod, PCSTR pszProcName)
 {
 	return ::GetProcAddress(hmod, pszProcName);
@@ -1347,11 +1338,11 @@ FARPROC WINAPI CApiHookMgr::GetProcAddressWindows(HMODULE hmod, PCSTR pszProcNam
 
 
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 //
 // class CHookedFunction
 //  
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 
 //
 // The highest private memory address (used for Windows 9x only)
@@ -1362,11 +1353,11 @@ PVOID CHookedFunction::sm_pvMaxAppAddr = NULL;
 //
 const BYTE cPushOpCode = 0x68;   
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // CHookedFunction
 //  
 //
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 CHookedFunction::CHookedFunction(
 	CHookedFunctions* pHookedFunctions,
 	PCSTR             pszCalleeModName, 
@@ -1411,11 +1402,11 @@ CHookedFunction::CHookedFunction(
 }
 
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // ~CHookedFunction
 //  
 //
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 CHookedFunction::~CHookedFunction()
 {
 	UnHookImport();
@@ -1442,22 +1433,22 @@ PROC CHookedFunction::Get_pfnOrig() const
 	return m_pfnOrig;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // HookImport
 //  
 // Set up a new hook function
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunction::HookImport()
 {
 	m_bHooked = DoHook(TRUE, m_pfnOrig, m_pfnHook);
 	return m_bHooked;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // UnHookImport
 //  
 // Restore the original API handler
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunction::UnHookImport()
 {
 	if (m_bHooked)
@@ -1465,11 +1456,11 @@ BOOL CHookedFunction::UnHookImport()
 	return !m_bHooked;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // ReplaceInAllModules
 //  
 // Replace the address of a imported function entry  in all modules
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunction::ReplaceInAllModules(
 	BOOL  bHookOrRestore,
 	PCSTR pszCalleeModName, 
@@ -1515,7 +1506,6 @@ BOOL CHookedFunction::ReplaceInAllModules(
 				}
 			} // for
 			// Hook this function in the executable as well
-			dlog("replacing in exe")
 			bResult = ReplaceInOneModule(
 				pszCalleeModName, 
 				pfnCurrent, 
@@ -1528,11 +1518,11 @@ BOOL CHookedFunction::ReplaceInAllModules(
 }
 
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // ReplaceInOneModule
 //  
 // Replace the address of the function in the IAT of a specific module
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunction::ReplaceInOneModule(
 	PCSTR   pszCalleeModName, 
 	PROC    pfnCurrent, 
@@ -1627,11 +1617,11 @@ BOOL CHookedFunction::ReplaceInOneModule(
 	return bResult;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // DoHook
 //  
 // Perform actual replacing of function pointers
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunction::DoHook(
 	BOOL bHookOrRestore,
 	PROC pfnCurrent, 
@@ -1639,8 +1629,6 @@ BOOL CHookedFunction::DoHook(
 	)
 {
 	// Hook this function in all currently loaded modules
-	dlog("In Do Hook")
-	dlog(m_szCalleeModName)
 	return ReplaceInAllModules(
 		bHookOrRestore, 
 		m_szCalleeModName, 
@@ -1670,11 +1658,11 @@ BOOL CHookedFunction::IsMandatory()
 	return bResult;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // 
 // class CHookedFunctions 
 //
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 
 CHookedFunctions::CHookedFunctions(CApiHookMgr* pApiHookMgr):
 	m_pApiHookMgr(pApiHookMgr)
@@ -1688,11 +1676,11 @@ CHookedFunctions::~CHookedFunctions()
 }
 
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // GetHookedFunction
 //  
 // Return the address of an CHookedFunction object
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 CHookedFunction* CHookedFunctions::GetHookedFunction(
 	HMODULE hmodOriginal, 
 	PCSTR   pszFuncName
@@ -1706,11 +1694,11 @@ CHookedFunction* CHookedFunctions::GetHookedFunction(
 	return GetHookedFunction(szFileName, pszFuncName);
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // GetFunctionNameFromExportSection
 //  
 // Return the name of the function from EAT by its ordinal value
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunctions::GetFunctionNameFromExportSection(
 	HMODULE hmodOriginal,
 	DWORD   dwFuncOrdinalNum,
@@ -1786,11 +1774,11 @@ BOOL CHookedFunctions::GetFunctionNameFromExportSection(
 	return bResult;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // GetFunctionNameByOrdinal
 //  
 // Return the name of the function by its ordinal value
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 void CHookedFunctions::GetFunctionNameByOrdinal(
 	PCSTR   pszCalleeModName, 
 	DWORD   dwFuncOrdinalNum,
@@ -1804,11 +1792,11 @@ void CHookedFunctions::GetFunctionNameByOrdinal(
 
 
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // GetHookedFunction
 //  
 // Return the address of an CHookedFunction object
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 CHookedFunction* CHookedFunctions::GetHookedFunction( 
 	PCSTR   pszCalleeModName, 
 	PCSTR   pszFuncName
@@ -1851,11 +1839,11 @@ CHookedFunction* CHookedFunctions::GetHookedFunction(
 
 
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // AddHook
 //  
 // Add a new object to the container
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunctions::AddHook(CHookedFunction* pHook)
 {
 	BOOL bResult = FALSE;
@@ -1885,11 +1873,11 @@ BOOL CHookedFunctions::AddHook(CHookedFunction* pHook)
 	return bResult;
 }
 
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 // RemoveHook
 //  
 // Remove exising object pointer from the container
-//---------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////
 BOOL CHookedFunctions::RemoveHook(CHookedFunction* pHook)
 {
 	BOOL bResult = FALSE;
