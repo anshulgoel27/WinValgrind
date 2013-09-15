@@ -42,7 +42,9 @@ CApiHookMgr::CApiHookMgr()
 	m_bSystemFuncsHooked = FALSE;
 	// No handle alloc fucntions have been hooked up yet
 	m_bHandleFuncsHooked = FALSE;
-
+	// No memory alloc fucntions have been hooked up yet
+	m_bMemFuncsHooked = FALSE;
+	
 	// Create an instance of the map container
     sm_pHookedFunctions  = new CHookedFunctions(this); 
 }
@@ -222,8 +224,39 @@ BOOL CApiHookMgr::HookHandleAllocFuncs()
 	return m_bHandleFuncsHooked;
 }
 
-
-
+//////////////////////////////////////////////////////////////////////////////
+// HookMemAllocFuncs
+// 
+// Hook all memory allocation functions in order to trace memory leaks
+//////////////////////////////////////////////////////////////////////////////
+BOOL CApiHookMgr::HookMemAllocFuncs()
+{
+	if (TRUE != m_bMemFuncsHooked)
+	{
+		HOOK_IMPORT(HeapAlloc, Kernel32 );
+		HOOK_IMPORT(HeapFree,Kernel32 );
+		HOOK_IMPORT(HeapReAlloc,Kernel32 );
+		HOOK_IMPORT(VirtualAlloc,Kernel32 );    
+		HOOK_IMPORT(VirtualFree,Kernel32 );
+		HOOK_IMPORT(VirtualAllocEx,Kernel32 );    
+		HOOK_IMPORT(VirtualFreeEx,Kernel32 );
+		HOOK_IMPORT(GlobalAlloc,Kernel32 );
+		HOOK_IMPORT(GlobalReAlloc,Kernel32 );
+		HOOK_IMPORT(GlobalFree,Kernel32 );
+		HOOK_IMPORT(LocalAlloc,Kernel32 );
+		HOOK_IMPORT(LocalReAlloc,Kernel32 );
+		HOOK_IMPORT(LocalFree,Kernel32 );
+		HOOK_IMPORT(MapViewOfFile,Kernel32 );
+		HOOK_IMPORT(MapViewOfFileEx,Kernel32 );
+		HOOK_IMPORT(UnmapViewOfFile,Kernel32 );
+		HOOK_IMPORT(CoTaskMemAlloc,Ole32 );
+		HOOK_IMPORT(CoTaskMemRealloc,Ole32 );
+		HOOK_IMPORT(CoTaskMemFree,Ole32 );
+		
+		m_bMemFuncsHooked = TRUE;
+	}
+	return m_bMemFuncsHooked;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // UnHookAllFuncs
@@ -1323,6 +1356,140 @@ BOOL   WINAPI CApiHookMgr::MyCloseHandle( HANDLE hObject )
 }
 
 #endif // _HANDLE_ALLOC_FUNCS_
+
+
+#ifndef _MEM_ALLOC_FUNCS_
+
+#define _MEM_ALLOC_FUNCS_
+/////////////////////////////////////////////////////////////////////////////
+//
+// Memory allocation API hooks 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+LPVOID WINAPI CApiHookMgr::MyHeapAlloc( IN HANDLE hHeap,
+                           IN DWORD dwFlags,
+                           IN SIZE_T dwBytes )
+{
+	LPVOID lMem =   HeapAlloc( hHeap, dwFlags, dwBytes );
+    CreateCallStack( lMem, dwBytes );
+    return lMem;
+}
+
+LPVOID WINAPI CApiHookMgr::MyHeapReAlloc( HANDLE hHeap,
+                           DWORD dwFlags,
+                           LPVOID lpMem,
+                           SIZE_T dwBytes )
+{
+    LPVOID lpNewMem =  HeapReAlloc( hHeap, dwFlags, lpMem, dwBytes );
+    try
+    {
+        CSingleLock lockObj( &g_Config::SyncObj, TRUE );
+        if( g_Config::g_bHooked && g_Config::g_bTrack )
+        {
+            g_Config::g_bTrack = false;
+            MEM_INFO stInfo;
+            if( g_Config::m_MemMap.find(lpMem)!=g_Config::m_MemMap.end())
+            {				
+				stInfo = g_Config::m_MemMap[lpMem];
+				g_Config::m_MemMap.erase( lpMem );
+                g_Config::m_MemMap[lpNewMem] = stInfo;
+
+            }
+            g_Config::g_bTrack = true;
+        }
+    }
+    catch (...)
+    {
+    }
+    return lpNewMem;
+}
+
+LPVOID WINAPI CApiHookMgr::MyVirtualAlloc( LPVOID lpAddress,
+                              SIZE_T dwSize, DWORD flAllocationType,
+                              DWORD flProtect )
+{
+    LPVOID lMem =   VirtualAlloc( lpAddress, dwSize, flAllocationType, flProtect );
+    CreateCallStack( lMem, dwSize );
+    return lMem;
+}
+
+BOOL WINAPI CApiHookMgr::MyVirtualFree( LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType )
+{
+    RemovCallStack( lpAddress );
+    return  VirtualFree( lpAddress, dwSize, dwFreeType );
+}
+
+LPVOID WINAPI CApiHookMgr::MyVirtualAllocEx( HANDLE hProcess, LPVOID lpAddress,
+                                SIZE_T dwSize, DWORD flAllocationType,
+                                DWORD flProtect )
+{
+    LPVOID lMem =   VirtualAllocEx( hProcess, lpAddress, dwSize, flAllocationType, flProtect );
+    CreateCallStack( lMem, dwSize );
+    return lMem;
+}
+
+BOOL WINAPI CApiHookMgr::MyVirtualFreeEx( HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType )
+{
+    RemovCallStack( lpAddress );
+    return  VirtualFreeEx( hProcess, lpAddress, dwSize, dwFreeType );
+}
+
+BOOL WINAPI CApiHookMgr::MyHeapFree(  HANDLE hHeap,  DWORD dwFlags,  LPVOID lpMem )
+{
+	RemovCallStack( lpMem );
+    return  HeapFree( hHeap, dwFlags, lpMem );
+}
+
+LPVOID WINAPI CApiHookMgr::MyCoTaskMemAlloc( SIZE_T cb)
+{
+    LPVOID lpMem =  CoTaskMemAlloc( cb );
+    CreateCallStack( lpMem, cb );
+    return lpMem;
+}
+
+LPVOID WINAPI CApiHookMgr::MyCoTaskMemRealloc(LPVOID pv, SIZE_T cb)
+{
+    LPVOID lpMem =  CoTaskMemRealloc(pv, cb );
+    if( lpMem )
+    {
+        CreateCallStack( lpMem, cb );
+        RemovCallStack( pv );
+    }
+    return lpMem;
+}
+
+void   WINAPI CApiHookMgr::MyCoTaskMemFree( LPVOID pv )
+{
+    RemovCallStack( pv );
+	CoTaskMemFree(pv);
+}
+
+LPVOID WINAPI CApiHookMgr::MyMapViewOfFile( HANDLE hFileMappingObject, DWORD dwDesiredAccess,
+    DWORD dwFileOffsetHigh, DWORD dwFileOffsetLow, SIZE_T dwNumberOfBytesToMap )
+{
+    LPVOID lMem =  MapViewOfFile( hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh,
+    dwFileOffsetLow, dwNumberOfBytesToMap);
+    CreateCallStack( lMem, dwNumberOfBytesToMap );
+    return lMem;
+}
+
+LPVOID WINAPI CApiHookMgr::MyMapViewOfFileEx( HANDLE hFileMappingObject, DWORD dwDesiredAccess,
+    DWORD dwFileOffsetHigh, DWORD dwFileOffsetLow, SIZE_T dwNumberOfBytesToMap, LPVOID lpBaseAddress )
+{
+    LPVOID lMem =  MapViewOfFileEx( hFileMappingObject, dwDesiredAccess, dwFileOffsetHigh,
+    dwFileOffsetLow, dwNumberOfBytesToMap, lpBaseAddress);
+    CreateCallStack( lMem, dwNumberOfBytesToMap );
+    return lMem;
+}
+
+BOOL WINAPI CApiHookMgr::MyUnmapViewOfFile( LPCVOID lpBaseAddress )
+{
+    RemovCallStack( (LPVOID)lpBaseAddress );
+    return  UnmapViewOfFile( lpBaseAddress );
+}
+
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////

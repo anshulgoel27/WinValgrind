@@ -60,6 +60,11 @@ DWORD WINAPI CParasiteApp::DumpController( LPVOID pParam )
     {
         dlog("Starting memory leak detection.")
 		dlog("Hooking memory allocation functions.")
+		
+		if(sm_pHookMgr->HookMemAllocFuncs())
+		{
+			dlog("Memory allocation API's hooked.")
+		}
     }
     else if( HT_GDI == g_Config::g_HookType )
     {
@@ -172,19 +177,16 @@ bool CParasiteApp::Cleanup()
 
     g_Config::g_bHooked = false;
     EmptyLeakMap();
-
 	
-	
-
 	return true;
 }
 int CParasiteApp::ExitInstance() 
 {
     try
     {   
-        // Restore the hooks
-		dlog("DLL_PROCESS_DETACH")
-		
+        dlog("DLL_PROCESS_DETACH")
+
+		// Restore the hooks
 		Cleanup();
     }
     catch (...)
@@ -336,9 +338,13 @@ void DumpLeak()
     {
         return;
     }
-    CFile File;
-    //if( !File.Open( _T("D:\\Dump.txt"), CFile::modeCreate|CFile::modeWrite ))
-    if( !File.Open( dlg.GetPathName(), CFile::modeCreate|CFile::modeWrite ))
+
+	DumpLeakToFile(dlg.GetPathName());
+}
+void DumpLeakToFile(CString fileName)
+{
+	CFile File;
+    if( !File.Open( fileName, CFile::modeCreate|CFile::modeWrite ))
     {
         AfxMessageBox( "Failed to create file" );
         return;

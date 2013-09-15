@@ -39,6 +39,7 @@ public:
 
 
 void DumpLeak();
+void DumpLeakToFile(CString fileName);
 void EmptyLeakMap();
 
 #ifdef PARASITE_DLL_SRC

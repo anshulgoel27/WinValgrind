@@ -46,14 +46,16 @@ public:
 		PCSTR pszCalleeModName, 
 		PCSTR pszFuncName
 		);
-	// 
+	 
 	// Hook all needed system functions in order to trap loading libraries
-	//
 	BOOL HookSystemFuncs();
 
 	// Hook handle alloc functions
 	BOOL HookHandleAllocFuncs();
 
+	// Hook memory alloc functions
+	BOOL HookMemAllocFuncs();
+	
 	// 
 	// Unhook all functions and restore original ones
 	//
@@ -93,6 +95,11 @@ private:
 	// Determines whether all handle alloc functions has been successfuly hacked
 	//
 	BOOL m_bHandleFuncsHooked;
+	
+	//
+	// Determines whether all memory allocation functions has been successfuly hacked
+	//
+	BOOL m_bMemFuncsHooked;
 
 	//
 	// Used when a DLL is newly loaded after hooking a function
@@ -134,8 +141,32 @@ private:
 		HMODULE hmod, 
 		PCSTR   pszProcName
 		);
-
-	// Handle alloc methods
+	
+	//////////////////////////////////////////////////////////////
+	// Memory alloc methods hooks
+	//////////////////////////////////////////////////////////////
+	static LPVOID WINAPI MyHeapAlloc( IN HANDLE hHeap, IN DWORD dwFlags, IN SIZE_T dwBytes );
+	static LPVOID WINAPI MyHeapReAlloc( HANDLE hHeap, DWORD dwFlags, LPVOID lpMem, SIZE_T dwBytes );
+	static LPVOID WINAPI MyVirtualAlloc( LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect );
+	static BOOL WINAPI MyVirtualFree( LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType );
+	static LPVOID WINAPI MyVirtualAllocEx( HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect );
+	static BOOL WINAPI MyVirtualFreeEx( HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType );
+	static BOOL WINAPI MyHeapFree(  HANDLE hHeap,  DWORD dwFlags,  LPVOID lpMem );
+	static LPVOID WINAPI MyCoTaskMemAlloc( SIZE_T cb);
+	static LPVOID WINAPI MyCoTaskMemRealloc(LPVOID pv, SIZE_T cb);
+	static void   WINAPI MyCoTaskMemFree( LPVOID pv );
+	static LPVOID WINAPI MyMapViewOfFile( HANDLE hFileMappingObject, DWORD dwDesiredAccess, DWORD dwFileOffsetHigh, DWORD dwFileOffsetLow, SIZE_T dwNumberOfBytesToMap );
+	static LPVOID WINAPI MyMapViewOfFileEx( HANDLE hFileMappingObject, DWORD dwDesiredAccess, DWORD dwFileOffsetHigh, DWORD dwFileOffsetLow, SIZE_T dwNumberOfBytesToMap, LPVOID lpBaseAddress );
+	static BOOL WINAPI MyUnmapViewOfFile( LPCVOID lpBaseAddress );
+	
+	// static int myntmapviewofsection( handle sectionhandle, handle processhandle, pvoid *baseaddress,
+									// ulong_ptr zerobits, size_t commitsize, plarge_integer sectionoffset, psize_t viewsize,
+									// section_inherit inheritdisposition, ulong allocationtype, ulong win32protect );
+	// static int myntunmapviewofsection( handle processhandle, pvoid baseaddress );
+	
+	////////////////////////////////////////////////////////////// 
+	// Handle alloc methods hooks
+	//////////////////////////////////////////////////////////////
 	static HANDLE WINAPI MyCreateEventA(LPSECURITY_ATTRIBUTES lpEventAttributes,BOOL bManualReset,BOOL bInitialState,LPCSTR lpName);
 	static HANDLE WINAPI MyCreateEventW( LPSECURITY_ATTRIBUTES lpEventAttributes,BOOL bManualReset,BOOL bInitialState,LPCWSTR lpName);
 	static HANDLE WINAPI MyCreateEventExA( LPSECURITY_ATTRIBUTES lpEventAttributes, LPCSTR lpName, DWORD dwFlags,DWORD dwDesiredAccess);
