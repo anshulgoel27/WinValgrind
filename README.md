@@ -86,7 +86,7 @@ usage: winvalgrind [-gc] | [-sm <PID>]
 2.) Edit the generated config.xml.
 
   --> Set the monitor type.
-  Note: Currently only "HANDLE" type monitor is supported.
+  Note: Currently only "HANDLE" & "MEMORY" type monitor is supported.
   
   --> Add the symbol path of the application you want to monitor.
 
@@ -122,116 +122,116 @@ at-last, all the remaining entries in map are treated as leaked once, and there 
 Currently supported API hooks
 =============================
 
-      LoadLibraryA
-      LoadLibraryW
-      LoadLibraryExA
-      LoadLibraryExW
-      GetProcAddress
-      CreateEventA
-      CreateEventW
-      CreateEventExA
-      CreateEventExW
-      OpenEventA
-      OpenEventW
-      CreateMutexA
-      CreateMutexW
-      CreateMutexExA
-      CreateMutexExW
-      OpenMutexA
-      OpenMutexW
-      CreateSemaphoreA
-      CreateSemaphoreW
-      CreateSemaphoreExA
-      CreateSemaphoreExW
-      OpenSemaphoreA
-      OpenSemaphoreW
-      CreateWaitableTimerA
-      CreateWaitableTimerW
-      CreateWaitableTimerExA
-      CreateWaitableTimerExW
-      OpenWaitableTimerA
-      OpenWaitableTimerW
-      CreateFileA
-      CreateFileW
-      CreateFileTransactedA
-      CreateFileTransactedW
-      FindFirstFileA
-      FindFirstFileW
-      FindFirstFileExA
-      FindFirstFileExW
-      FindFirstFileExW
-      FindFirstFileNameW
-      FindFirstFileTransactedA
-      FindFirstFileTransactedW
-      FindFirstStreamTransactedW
-      FindFirstStreamW
-      FindClose
-      OpenFileById
-      ReOpenFile
-      CreateIoCompletionPort
-      CreateRestrictedToken
-      DuplicateToken
-      DuplicateTokenEx
-      OpenProcessToken
-      OpenThreadToken
-      FindFirstChangeNotificationA
-      FindFirstChangeNotificationW
-      FindCloseChangeNotification
-      CreateMemoryResourceNotification
-      CreateFileMappingA
-      CreateFileMappingW
-      CreateFileMappingNumaA
-      CreateFileMappingNumaW
-      OpenFileMappingA
-      OpenFileMappingW
-      HeapCreate
-      HeapDestroy
-      GlobalAlloc
-      GlobalReAlloc
-      GlobalFree
-      LocalAlloc
-      LocalReAlloc
-      LocalFree
-      CreateProcessA
-      CreateProcessW
-      CreateProcessAsUserA
-      CreateProcessAsUserW
-      CreateProcessWithLogonW
-      CreateProcessWithTokenW
-      OpenProcess
-      CreateThread
-      CreateRemoteThread
-      OpenThread
-      CreateJobObjectA
-      CreateJobObjectW
-      CreateMailslotA
-      CreateMailslotW
-      CreatePipe
-      CreateNamedPipeA
-      CreateNamedPipeW
-      RegCreateKeyExA
-      RegCreateKeyExW
-      RegCreateKeyTransactedA
-      RegCreateKeyTransactedW
-      RegOpenCurrentUser
-      RegOpenKeyA
-      RegOpenKeyW
-      RegOpenKeyExA
-      RegOpenKeyExW
-      RegOpenKeyTransactedA
-      RegOpenKeyTransactedW
-      RegOpenUserClassesRoot
-      RegCreateKeyA
-      RegCreateKeyW
-      RegCloseKey
-      DuplicateHandle
-      CloseHandle
-      
+    Handle allocation APIs          Memory allocation APIs
+            
+    LoadLibraryA                    HeapAlloc
+    LoadLibraryW                    HeapFree
+    LoadLibraryExA                  HeapReAlloc
+    LoadLibraryExW                  VirtualAlloc
+    GetProcAddress                  VirtualFree
+    CreateEventA                    VirtualAllocEx
+    CreateEventW                    VirtualFreeEx
+    CreateEventExA                  GlobalAlloc
+    CreateEventExW                  GlobalReAlloc
+    OpenEventA                      GlobalFree
+    OpenEventW                      LocalAlloc
+    CreateMutexA                    LocalReAlloc
+    CreateMutexW                    LocalFree
+    CreateMutexExA                  MapViewOfFile
+    CreateMutexExW                  MapViewOfFileEx
+    OpenMutexA                      UnmapViewOfFile
+    OpenMutexW                      CoTaskMemAlloc
+    CreateSemaphoreA                CoTaskMemRealloc
+    CreateSemaphoreW                CoTaskMemFree
+    CreateSemaphoreExA      
+    CreateSemaphoreExW      
+    OpenSemaphoreA  
+    OpenSemaphoreW  
+    CreateWaitableTimerA    
+    CreateWaitableTimerW    
+    CreateWaitableTimerExA  
+    CreateWaitableTimerExW  
+    OpenWaitableTimerA      
+    OpenWaitableTimerW      
+    CreateFileA     
+    CreateFileW     
+    CreateFileTransactedA   
+    CreateFileTransactedW   
+    FindFirstFileA  
+    FindFirstFileW  
+    FindFirstFileExA        
+    FindFirstFileExW        
+    FindFirstFileExW        
+    FindFirstFileNameW      
+    FindFirstFileTransactedA        
+    FindFirstFileTransactedW        
+    FindFirstStreamTransactedW      
+    FindFirstStreamW        
+    FindClose       
+    OpenFileById    
+    ReOpenFile      
+    CreateIoCompletionPort  
+    CreateRestrictedToken   
+    DuplicateToken  
+    DuplicateTokenEx        
+    OpenProcessToken        
+    OpenThreadToken 
+    FindFirstChangeNotificationA    
+    FindFirstChangeNotificationW    
+    FindCloseChangeNotification     
+    CreateMemoryResourceNotification        
+    CreateFileMappingA      
+    CreateFileMappingW      
+    CreateFileMappingNumaA  
+    CreateFileMappingNumaW  
+    OpenFileMappingA        
+    OpenFileMappingW        
+    HeapCreate      
+    HeapDestroy     
+    GlobalAlloc     
+    GlobalReAlloc   
+    GlobalFree      
+    LocalAlloc      
+    LocalReAlloc    
+    LocalFree       
+    CreateProcessA  
+    CreateProcessW  
+    CreateProcessAsUserA    
+    CreateProcessAsUserW    
+    CreateProcessWithLogonW 
+    CreateProcessWithTokenW 
+    OpenProcess     
+    CreateThread    
+    CreateRemoteThread      
+    OpenThread      
+    CreateJobObjectA        
+    CreateJobObjectW        
+    CreateMailslotA 
+    CreateMailslotW 
+    CreatePipe      
+    CreateNamedPipeA        
+    CreateNamedPipeW        
+    RegCreateKeyExA 
+    RegCreateKeyExW 
+    RegCreateKeyTransactedA 
+    RegCreateKeyTransactedW 
+    RegOpenCurrentUser      
+    RegOpenKeyA     
+    RegOpenKeyW     
+    RegOpenKeyExA   
+    RegOpenKeyExW   
+    RegOpenKeyTransactedA   
+    RegOpenKeyTransactedW   
+    RegOpenUserClassesRoot  
+    RegCreateKeyA   
+    RegCreateKeyW   
+    RegCloseKey     
+    DuplicateHandle 
+    CloseHandle      
+  
 What is coming up?
 ==================
 
-  --> Memory allocation API hooks.
-  
   --> GDI objects allocation API hooks.
   
   --> GUI
