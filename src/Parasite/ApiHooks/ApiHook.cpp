@@ -44,7 +44,9 @@ CApiHookMgr::CApiHookMgr()
 	m_bHandleFuncsHooked = FALSE;
 	// No memory alloc fucntions have been hooked up yet
 	m_bMemFuncsHooked = FALSE;
-	
+	// No GDI object alloc fucntions have been hooked up yet
+	m_bGDIFuncsHooked = FALSE;
+
 	// Create an instance of the map container
     sm_pHookedFunctions  = new CHookedFunctions(this); 
 }
@@ -256,6 +258,132 @@ BOOL CApiHookMgr::HookMemAllocFuncs()
 		m_bMemFuncsHooked = TRUE;
 	}
 	return m_bMemFuncsHooked;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// HookGDIAllocFuncs
+// 
+// Hook all GDI obejct allocation functions in order to trace GDI object leaks
+//////////////////////////////////////////////////////////////////////////////
+BOOL CApiHookMgr::HookGDIAllocFuncs()
+{
+	if (TRUE != m_bGDIFuncsHooked)
+	{
+		// Bitmap functions
+		HOOK_IMPORT(LoadBitmapA,User32 );
+		HOOK_IMPORT(LoadBitmapW,User32 );
+		HOOK_IMPORT(LoadImageA,User32 );
+		HOOK_IMPORT(LoadImageW,User32 );
+		HOOK_IMPORT(CreateBitmap,Gdi32 );
+		HOOK_IMPORT(CreateBitmapIndirect,Gdi32 );
+		HOOK_IMPORT(CreateCompatibleBitmap,Gdi32 );
+		HOOK_IMPORT(CreateDIBitmap,Gdi32 );
+		HOOK_IMPORT(CreateDIBSection,Gdi32 );
+		HOOK_IMPORT(CreateDiscardableBitmap,Gdi32 );
+		HOOK_IMPORT(CopyImage,User32 );
+		HOOK_IMPORT(GetIconInfo,User32 );
+		HOOK_IMPORT(GetIconInfoExA,User32 );
+		HOOK_IMPORT(GetIconInfoExA,User32 );
+		HOOK_IMPORT(DeleteObject,Gdi32 );
+    
+		//ICONS
+		HOOK_IMPORT(CopyIcon,User32 );
+		HOOK_IMPORT(CreateIcon,User32 );
+		HOOK_IMPORT(CreateIconFromResource,User32 );
+		HOOK_IMPORT(CreateIconFromResourceEx,User32 );
+		HOOK_IMPORT(CreateIconIndirect,User32 );
+		HOOK_IMPORT(DestroyIcon,User32 );
+		HOOK_IMPORT(DuplicateIcon,Shell32 );
+		HOOK_IMPORT(ExtractAssociatedIconA,Shell32 );
+		HOOK_IMPORT(ExtractAssociatedIconW,Shell32 );
+		HOOK_IMPORT(ExtractAssociatedIconExA,Shell32 );
+		HOOK_IMPORT(ExtractAssociatedIconExW,Shell32 );
+		HOOK_IMPORT(ExtractIconA,Shell32 );
+		HOOK_IMPORT(ExtractIconW,Shell32 );
+		HOOK_IMPORT(ExtractIconExA,Shell32 );
+		HOOK_IMPORT(ExtractIconExW,Shell32 );
+		HOOK_IMPORT(LoadIconA,User32 );
+		HOOK_IMPORT(LoadIconW,User32 );
+		HOOK_IMPORT(PrivateExtractIconsA,User32 );
+		HOOK_IMPORT(PrivateExtractIconsW,User32 );
+
+		// Cursor
+		HOOK_IMPORT(CreateCursor,User32 );
+		HOOK_IMPORT(LoadCursorA,User32 );
+		HOOK_IMPORT(LoadCursorW,User32 );
+		HOOK_IMPORT(LoadCursorFromFileA,User32 );
+		HOOK_IMPORT(LoadCursorFromFileW,User32 );
+		HOOK_IMPORT(DestroyCursor,User32 );
+
+
+		// brush
+		HOOK_IMPORT(CreateBrushIndirect,Gdi32 );
+		HOOK_IMPORT(CreateSolidBrush,Gdi32 );
+		HOOK_IMPORT(CreatePatternBrush,Gdi32 );
+		HOOK_IMPORT(CreateDIBPatternBrush,Gdi32 );
+		HOOK_IMPORT(CreateDIBPatternBrushPt,Gdi32 );
+		HOOK_IMPORT(CreateHatchBrush,Gdi32 );
+
+		// DC
+		HOOK_IMPORT(CreateCompatibleDC,Gdi32 );
+		HOOK_IMPORT(CreateDCA,Gdi32 );
+		HOOK_IMPORT(CreateDCW,Gdi32 );
+		HOOK_IMPORT(CreateICA,Gdi32 );
+		HOOK_IMPORT(CreateICW,Gdi32 );
+		HOOK_IMPORT(GetDC,User32 );
+		HOOK_IMPORT(GetDCEx,User32 );
+		HOOK_IMPORT(GetWindowDC,User32 );
+		HOOK_IMPORT(ReleaseDC,User32 );
+		HOOK_IMPORT(DeleteDC,Gdi32 );
+    
+
+		// FONT
+		HOOK_IMPORT(CreateFontA,Gdi32 );
+		HOOK_IMPORT(CreateFontW,Gdi32 );
+		HOOK_IMPORT(CreateFontIndirectA,Gdi32 );
+		HOOK_IMPORT(CreateFontIndirectW,Gdi32 );
+
+		// Metafile
+		HOOK_IMPORT(CreateMetaFileA,Gdi32 );
+		HOOK_IMPORT(CreateMetaFileW,Gdi32 );
+		HOOK_IMPORT(CreateEnhMetaFileA,Gdi32 );
+		HOOK_IMPORT(CreateEnhMetaFileW,Gdi32 );
+		HOOK_IMPORT(GetEnhMetaFileA,Gdi32 );
+		HOOK_IMPORT(GetEnhMetaFileW,Gdi32 );
+		HOOK_IMPORT(GetMetaFileA,Gdi32 );
+		HOOK_IMPORT(GetMetaFileW,Gdi32 );
+		HOOK_IMPORT(DeleteMetaFile,Gdi32 );
+		HOOK_IMPORT(DeleteEnhMetaFile,Gdi32 );
+		HOOK_IMPORT(CopyEnhMetaFileA,Gdi32 );
+		HOOK_IMPORT(CopyEnhMetaFileW,Gdi32 );
+		HOOK_IMPORT(CloseEnhMetaFile,Gdi32 );
+		HOOK_IMPORT(CloseMetaFile,Gdi32 );
+
+		//Pen
+		HOOK_IMPORT(CreatePen,Gdi32 );
+		HOOK_IMPORT(CreatePenIndirect,Gdi32 );
+		HOOK_IMPORT(ExtCreatePen,Gdi32 );
+
+		//region
+		HOOK_IMPORT(PathToRegion,Gdi32 );
+		HOOK_IMPORT(CreateEllipticRgn,Gdi32 );
+		HOOK_IMPORT(CreateEllipticRgnIndirect,Gdi32 );
+		HOOK_IMPORT(CreatePolygonRgn,Gdi32 );
+		HOOK_IMPORT(CreatePolyPolygonRgn,Gdi32 );
+		HOOK_IMPORT(CreateRectRgn,Gdi32 );
+		HOOK_IMPORT(CreateRectRgnIndirect,Gdi32 );
+		HOOK_IMPORT(CreateRoundRectRgn,Gdi32 );
+		HOOK_IMPORT(ExtCreateRegion,Gdi32 );
+
+		//palette
+		HOOK_IMPORT(CreateHalftonePalette,Gdi32 );
+		HOOK_IMPORT(CreatePalette,Gdi32 );
+
+
+		m_bGDIFuncsHooked = TRUE;
+	}
+
+	return m_bGDIFuncsHooked;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -564,8 +692,7 @@ FARPROC WINAPI CApiHookMgr::MyGetProcAddress(HMODULE hmod, PCSTR pszProcName)
 	return pfn;
 }
 
-#endif _SYS_API_HOOKS_
-
+#endif // _SYS_API_HOOKS_
 
 #ifndef _HANDLE_ALLOC_FUNCS_
 
@@ -1357,7 +1484,6 @@ BOOL   WINAPI CApiHookMgr::MyCloseHandle( HANDLE hObject )
 
 #endif // _HANDLE_ALLOC_FUNCS_
 
-
 #ifndef _MEM_ALLOC_FUNCS_
 
 #define _MEM_ALLOC_FUNCS_
@@ -1489,7 +1615,938 @@ BOOL WINAPI CApiHookMgr::MyUnmapViewOfFile( LPCVOID lpBaseAddress )
     return  UnmapViewOfFile( lpBaseAddress );
 }
 
-#endif
+#endif // _MEM_ALLOC_FUNCS_
+
+#ifndef _GDI_ALLOC_FUNCS_
+#define _GDI_ALLOC_FUNCS_
+/////////////////////////////////////////////////////////////////////////////
+//
+// GDI object allocation API hooks 
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// bitmap
+
+HANDLE WINAPI  CApiHookMgr::MyLoadImageA(HINSTANCE hInst,LPCSTR name,UINT type,int cx,int cy,UINT fuLoad)
+{
+    HANDLE hImg =  LoadImageA(hInst,name,type,cx,cy,fuLoad);
+    CreateCallStack( hImg , 0 );
+    return hImg;
+}
+
+HANDLE WINAPI  CApiHookMgr::MyLoadImageW( HINSTANCE hInst,LPCWSTR name,UINT type,int cx,int cy,UINT fuLoad)
+{
+    HANDLE hImg =  LoadImageW(hInst,name,type,cx,cy,fuLoad);
+    CreateCallStack( hImg , 0 );
+    return hImg;
+}
+
+HBITMAP WINAPI  CApiHookMgr::MyLoadBitmapA( HINSTANCE hInstance, LPCSTR lpBitmapName)
+{
+    HBITMAP hBmp =  LoadBitmapA( hInstance, lpBitmapName );
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+HBITMAP WINAPI  CApiHookMgr::MyLoadBitmapW( HINSTANCE hInstance, LPCWSTR lpBitmapName )
+{
+    HBITMAP hBmp =   LoadBitmapW( hInstance, lpBitmapName );
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+HANDLE  WINAPI  CApiHookMgr::MyLoadImageADef( HINSTANCE hInst, LPCSTR name, UINT type,int cx,int cy, UINT fuLoad)
+{
+    HANDLE hBmp =   LoadImageA( hInst, name, type,cx,cy, fuLoad );
+    CreateCallStack( hBmp , type );
+    return hBmp;
+}
+
+HANDLE  WINAPI  CApiHookMgr::MyLoadImageWDef( HINSTANCE hInst, LPCWSTR name, UINT type, int cx, int cy, UINT fuLoad)
+{
+    HANDLE hBmp =   LoadImageW( hInst, name, type,cx,cy, fuLoad );
+    CreateCallStack( hBmp , type );
+    return hBmp;
+}
+
+HBITMAP WINAPI  CApiHookMgr::MyCreateBitmap(  int nWidth,  int nHeight, UINT nPlanes,  UINT nBitCount,  CONST VOID *lpBits)
+{
+    HBITMAP hBmp =   CreateBitmap( nWidth,  nHeight, nPlanes,   nBitCount,  lpBits );
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+HBITMAP WINAPI  CApiHookMgr::MyCreateBitmapIndirect(  CONST BITMAP *pbm )
+{
+    HBITMAP hBmp =   CreateBitmapIndirect( pbm );
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+HBITMAP WINAPI  CApiHookMgr::MyCreateCompatibleBitmap(  HDC hdc,  int cx,  int cy)
+{
+    HBITMAP hBmp =   CreateCompatibleBitmap( hdc,   cx,   cy);
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+HBITMAP WINAPI  CApiHookMgr::MyCreateDIBitmap(  HDC hdc,  CONST BITMAPINFOHEADER *pbmih,  DWORD flInit,  CONST VOID *pjBits,  CONST BITMAPINFO *pbmi,  UINT iUsage)
+{
+    HBITMAP hBmp =   CreateDIBitmap( hdc,   pbmih,   flInit,  pjBits,   pbmi,   iUsage);
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+HBITMAP WINAPI  CApiHookMgr::MyCreateDIBSection( HDC hdc,  CONST BITMAPINFO *lpbmi,  UINT usage, VOID **ppvBits,  HANDLE hSection,  DWORD offset)
+{
+    HBITMAP hBmp =   CreateDIBSection( hdc,  lpbmi,  usage, ppvBits,  hSection,  offset );
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+
+HBITMAP WINAPI  CApiHookMgr::MyCreateDiscardableBitmap( HDC hdc, int cx, int cy)
+{
+    HBITMAP hBmp =   CreateDiscardableBitmap( hdc, cx, cy );
+    CreateCallStack( hBmp , 0 );
+    return hBmp;
+}
+
+HANDLE  WINAPI  CApiHookMgr::MyCopyImage( HANDLE h, UINT type, int cx, int cy, UINT flags)
+{
+    HANDLE hBmp =   CopyImage(h, type, cx, cy, flags);
+    int nType = 0;
+    CreateCallStack( hBmp , type );
+    return hBmp;
+}
+
+BOOL WINAPI  CApiHookMgr::MyGetIconInfo( HICON hIcon, PICONINFO piconinfo)
+{
+    BOOL bRet =  GetIconInfo( hIcon, piconinfo );
+    if( bRet )
+    {
+        CreateCallStack( piconinfo->hbmColor, 0 );
+        if( piconinfo->hbmMask )
+        {
+            CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+            if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+            {
+                 g_Config::g_bTrack = false;
+                MEM_INFO stInfo;
+              	if( g_Config::m_MemMap.find( piconinfo->hbmColor)!= g_Config::m_MemMap.end())
+                {
+					stInfo =  g_Config::m_MemMap[piconinfo->hbmColor];
+					MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[piconinfo->hbmMask] = stInfo2;
+                }
+                 g_Config::g_bTrack = true;
+            }
+        }
+        
+    }
+    return bRet;
+}
+
+BOOL WINAPI  CApiHookMgr::MyGetIconInfoExA( HICON hicon, PICONINFOEXA piconinfo)
+{
+    BOOL bRet =  GetIconInfoExA( hicon, piconinfo );
+    if( bRet )
+    {
+        CreateCallStack( piconinfo->hbmColor, 0 );
+        if( piconinfo->hbmMask )
+        {
+            CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+            if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+            {
+                 g_Config::g_bTrack = false;
+                MEM_INFO stInfo;
+                if( g_Config::m_MemMap.find( piconinfo->hbmColor)!= g_Config::m_MemMap.end())
+                {
+					stInfo =  g_Config::m_MemMap[piconinfo->hbmColor];
+					MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[piconinfo->hbmMask] = stInfo2;
+                }
+                 g_Config::g_bTrack = true;
+            }
+        }
+
+    }
+    return bRet;
+}
+
+BOOL WINAPI  CApiHookMgr::MyGetIconInfoExW( HICON hicon,PICONINFOEXW piconinfo)
+{
+    BOOL bRet =  GetIconInfoExW( hicon, piconinfo );
+    if( bRet )
+    {
+        CreateCallStack( piconinfo->hbmColor, 0 );
+        if( piconinfo->hbmMask )
+        {
+            CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+            if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+            {
+                 g_Config::g_bTrack = false;
+                MEM_INFO stInfo;
+                if( g_Config::m_MemMap.find( piconinfo->hbmColor)!= g_Config::m_MemMap.end())
+                {
+					stInfo =  g_Config::m_MemMap[piconinfo->hbmColor];
+					MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[piconinfo->hbmMask] = stInfo2;
+                }
+                 g_Config::g_bTrack = true;
+            }
+        }
+    }
+    return bRet;
+}
+
+
+BOOL WINAPI  CApiHookMgr::MyDeleteObject(  HGDIOBJ ho)
+{
+    BOOL bRet =   DeleteObject( ho );
+    if( bRet )
+        RemovCallStack( ho );
+    return bRet;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//ICONS
+HICON WINAPI  CApiHookMgr::MyCopyIcon( HICON hIcon)
+{
+    HICON hIconnew =  CopyIcon( hIcon );
+    CreateCallStack( hIconnew, IMAGE_ICON );
+    return hIconnew;
+}
+
+HICON WINAPI  CApiHookMgr::MyCreateIcon(HINSTANCE hInstance,int nWidth,int nHeight,BYTE cPlanes,BYTE cBitsPixel,CONST BYTE *lpbANDbits,CONST BYTE *lpbXORbits)
+{
+    HICON hIcon =  CreateIcon( hInstance,nWidth,nHeight,cPlanes,cBitsPixel,lpbANDbits,lpbXORbits) ;
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyCreateIconFromResource( PBYTE presbits, DWORD dwResSize, BOOL fIcon, DWORD dwVer)
+{
+    HICON hIcon =  CreateIconFromResource(presbits, dwResSize, fIcon, dwVer);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyCreateIconFromResourceEx( PBYTE presbits, DWORD dwResSize,BOOL fIcon,DWORD dwVer,int cxDesired,int cyDesired,UINT Flags )
+{
+    HICON hIcon =  CreateIconFromResourceEx(presbits, dwResSize,fIcon,dwVer,cxDesired,cyDesired,Flags );
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyCreateIconIndirect( PICONINFO piconinfo )
+{
+    HICON hIcon =  CreateIconIndirect(piconinfo );
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+BOOL  WINAPI  CApiHookMgr::MyDestroyIcon(HICON hIcon)
+{
+    BOOL bRet =  DestroyIcon( hIcon );
+    if( bRet )
+        RemovCallStack( hIcon );
+    return bRet;
+}
+
+HICON WINAPI  CApiHookMgr::MyDuplicateIcon(HINSTANCE hInst, HICON hIcon)
+{
+    HICON hIconnew =  DuplicateIcon( hInst, hIcon );
+    CreateCallStack( hIconnew, IMAGE_ICON );
+    return hIconnew;
+}
+
+HICON WINAPI  CApiHookMgr::MyExtractAssociatedIconA(HINSTANCE hInst,  LPSTR lpIconPath,  LPWORD lpiIcon)
+{
+    HICON hIcon =  ExtractAssociatedIconA(hInst,  lpIconPath,  lpiIcon);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyExtractAssociatedIconW(HINSTANCE hInst,  LPWSTR lpIconPath,  LPWORD lpiIcon)
+{
+    HICON hIcon =  ExtractAssociatedIconW(hInst,  lpIconPath,  lpiIcon);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyExtractAssociatedIconExA(HINSTANCE hInst,LPSTR lpIconPath,  LPWORD lpiIconIndex,  LPWORD lpiIconId)
+{
+    HICON hIcon =  ExtractAssociatedIconExA(hInst,lpIconPath,  lpiIconIndex,  lpiIconId);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyExtractAssociatedIconExW(HINSTANCE hInst,LPWSTR lpIconPath,  LPWORD lpiIconIndex,  LPWORD lpiIconId)
+{
+    HICON hIcon =  ExtractAssociatedIconExW(hInst,lpIconPath,  lpiIconIndex,  lpiIconId);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyExtractIconA(HINSTANCE hInst, LPCSTR lpszExeFileName, UINT nIconIndex)
+{
+    HICON hIcon =  ExtractIconA(hInst, lpszExeFileName, nIconIndex);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyExtractIconW(HINSTANCE hInst, LPCWSTR lpszExeFileName, UINT nIconIndex)
+{
+    HICON hIcon =  ExtractIconW(hInst, lpszExeFileName, nIconIndex);
+    CreateCallStack( hIcon, IMAGE_ICON );
+    return hIcon;
+}
+
+UINT  WINAPI  CApiHookMgr::MyExtractIconExA(LPCSTR lpszFile, int nIconIndex, HICON *phiconLarge, HICON *phiconSmall, UINT nIcons)
+{
+    UINT uRet =  ExtractIconExA(lpszFile, nIconIndex, phiconLarge, phiconSmall, nIcons);
+    if( uRet <= 0 || ( -1 == nIconIndex && !phiconLarge && !phiconSmall))
+    {
+        return uRet;
+    }
+    MEM_INFO stInfo;	
+    CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+    bool bFirst = true;
+    if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+    {
+         g_Config::g_bTrack = false;			
+        for( UINT uIdx = 1; uIdx < uRet; uIdx++ )
+        {
+            if( phiconLarge[uIdx] )
+            {				
+                if( bFirst )
+                {
+                    CreateCallStack( phiconLarge[uIdx], IMAGE_ICON );
+                    if(  g_Config::m_MemMap.find(phiconLarge[uIdx])!= g_Config::m_MemMap.end())
+					{
+						stInfo =  g_Config::m_MemMap[phiconLarge[uIdx]];
+                        bFirst = false;
+					}
+                }
+                else
+                {
+                    MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[phiconLarge[uIdx]] = stInfo2;
+                }					
+            }
+
+            if( phiconSmall[uIdx] )
+            {				
+                if( bFirst )
+                {
+                    CreateCallStack( phiconSmall[uIdx], IMAGE_ICON );
+                    if(  g_Config::m_MemMap.find(phiconLarge[uIdx])!= g_Config::m_MemMap.end())
+					{
+						stInfo =  g_Config::m_MemMap[phiconLarge[uIdx]];
+                        bFirst = false;
+					}
+                }
+                else
+                {
+                    MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[phiconSmall[uIdx]] = stInfo2;
+                }					
+            }
+        }
+         g_Config::g_bTrack = true;
+    }		
+    return uRet;
+}
+
+UINT  WINAPI  CApiHookMgr::MyExtractIconExW(LPCWSTR lpszFile, int nIconIndex,  HICON *phiconLarge, HICON *phiconSmall, UINT nIcons)
+{
+    UINT uRet =  ExtractIconExW(lpszFile, nIconIndex, phiconLarge, phiconSmall, nIcons);
+    if( uRet <= 0 || ( -1 == nIconIndex && !phiconLarge && !phiconSmall))
+    {
+        return uRet;
+    }
+    MEM_INFO stInfo;	
+    CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+    bool bFirst = true;
+    if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+    {
+         g_Config::g_bTrack = false;			
+        for( UINT uIdx = 1; uIdx < uRet; uIdx++ )
+        {
+            if( phiconLarge[uIdx] )
+            {				
+                if( bFirst )
+                {
+                    CreateCallStack( phiconLarge[uIdx], IMAGE_ICON );
+                    if(  g_Config::m_MemMap.find(phiconLarge[0])!= g_Config::m_MemMap.end())
+					{
+						stInfo =  g_Config::m_MemMap[phiconLarge[0]];
+                        bFirst = false;
+					}
+                }
+                else
+                {
+                    MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[phiconLarge[uIdx]] = stInfo2;
+                }					
+            }
+
+            if( phiconSmall[uIdx] )
+            {				
+                if( bFirst )
+                {
+                    CreateCallStack( phiconSmall[uIdx], IMAGE_ICON );
+                    if( g_Config::m_MemMap.find(phiconLarge[0])!= g_Config::m_MemMap.end())
+					{
+						stInfo =  g_Config::m_MemMap[phiconLarge[0]];
+                        bFirst = false;
+					}
+                }
+                else
+                {
+                    MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[phiconSmall[uIdx]] = stInfo2;
+                }					
+            }
+        }
+         g_Config::g_bTrack = true;
+    }		
+    return uRet;
+}
+
+HICON WINAPI  CApiHookMgr::MyLoadIconA( HINSTANCE hInstance, LPCSTR lpIconName )
+{
+    HICON hIcon =  LoadIconA(hInstance, lpIconName );
+    if( hIcon && hInstance )
+    {
+        CreateCallStack( hIcon, IMAGE_ICON );
+    }
+    return hIcon;
+}
+
+HICON WINAPI  CApiHookMgr::MyLoadIconW( HINSTANCE hInstance, LPCWSTR lpIconName )
+{
+    HICON hIcon =  LoadIconW(hInstance, lpIconName );
+    if( hIcon && hInstance )
+    {
+        CreateCallStack( hIcon, IMAGE_ICON );
+    }
+    return hIcon;
+}
+
+UINT  WINAPI  CApiHookMgr::MyPrivateExtractIconsA( LPCSTR szFileName, int nIconIndex, int cxIcon, int cyIcon, HICON *phicon, UINT *piconid, UINT nIcons, UINT flags)
+{
+    UINT uRet =  PrivateExtractIconsA(szFileName, nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+    if( uRet <= 0 || !phicon )
+    {
+        return uRet;
+    }
+    MEM_INFO stInfo;	
+    CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+    bool bFirst = true;
+    if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+    {
+         g_Config::g_bTrack = false;			
+        for( UINT uIdx = 1; uIdx < uRet; uIdx++ )
+        {
+            if( phicon[uIdx] )
+            {				
+                if( bFirst )
+                {
+                    CreateCallStack( phicon[uIdx], IMAGE_ICON );
+					if( g_Config::m_MemMap.find(phicon[uIdx])!= g_Config::m_MemMap.end())
+					{
+						stInfo =  g_Config::m_MemMap[phicon[uIdx]];
+                        bFirst = false;
+					}
+                }
+                else
+                {
+                    MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[phicon[uIdx]] = stInfo2;
+                }					
+            }
+        }
+         g_Config::g_bTrack = true;
+    }		
+    return uRet;
+}
+
+UINT  WINAPI  CApiHookMgr::MyPrivateExtractIconsW( LPCWSTR szFileName, int nIconIndex, int cxIcon, int cyIcon, HICON *phicon, UINT *piconid,UINT nIcons,UINT flags)
+{
+    UINT uRet =  PrivateExtractIconsW(szFileName, nIconIndex, cxIcon, cyIcon, phicon, piconid, nIcons, flags);
+    if( uRet <= 0 || !phicon )
+    {
+        return uRet;
+    }
+    MEM_INFO stInfo;	
+    CSingleLock lockObj( & g_Config::SyncObj, TRUE );
+    bool bFirst = true;
+    if(  g_Config::g_bHooked &&  g_Config::g_bTrack )
+    {
+         g_Config::g_bTrack = false;			
+        for( UINT uIdx = 1; uIdx < uRet; uIdx++ )
+        {
+            if( phicon[uIdx] )
+            {				
+                if( bFirst )
+                {
+                    CreateCallStack( phicon[uIdx], IMAGE_ICON );
+                    if(  g_Config::m_MemMap.find(phicon[uIdx])!= g_Config::m_MemMap.end())
+					{
+						stInfo =  g_Config::m_MemMap[phicon[uIdx]];
+                        bFirst = false;
+					}
+                }
+                else
+                {
+                    MEM_INFO stInfo2;
+                    stInfo2.nMemSize = stInfo.nMemSize;
+                     g_Config::m_MemMap[phicon[uIdx]] = stInfo2;
+                }					
+            }
+        }
+         g_Config::g_bTrack = true;
+    }		
+    return uRet;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Cursors
+HCURSOR WINAPI  CApiHookMgr::MyCreateCursor( HINSTANCE hInst, int xHotSpot, int yHotSpot,int nWidth, int nHeight, CONST VOID *pvANDPlane,CONST VOID *pvXORPlane)
+{
+    HCURSOR hCur =  CreateCursor(hInst, xHotSpot, yHotSpot,nWidth, nHeight, pvANDPlane,pvXORPlane);
+    CreateCallStack( hCur, IMAGE_CURSOR);
+    return hCur;
+}
+
+HCURSOR WINAPI  CApiHookMgr::MyLoadCursorA( HINSTANCE hInstance, LPCSTR lpCursorName)
+{
+    HCURSOR hCur =  LoadCursorA( hInstance, lpCursorName );
+    if( hInstance )
+    {
+        CreateCallStack( hCur, IMAGE_CURSOR );
+    }	
+    return hCur;
+}
+
+HCURSOR WINAPI  CApiHookMgr::MyLoadCursorW( HINSTANCE hInstance, LPCWSTR lpCursorName)
+{
+    HCURSOR hCur =  LoadCursorW( hInstance, lpCursorName );
+    if( hInstance )
+    {
+        CreateCallStack( hCur, IMAGE_CURSOR );
+    }	
+    return hCur;
+}
+
+HCURSOR WINAPI  CApiHookMgr::MyLoadCursorFromFileA( LPCSTR lpFileName )
+{
+    HCURSOR hCur =  LoadCursorFromFileA(lpFileName);
+    CreateCallStack( hCur,IMAGE_CURSOR );
+    return hCur;
+}
+
+HCURSOR WINAPI  CApiHookMgr::MyLoadCursorFromFileW( LPCWSTR lpFileName )
+{
+    HCURSOR hCur =  LoadCursorFromFileW(lpFileName);
+    CreateCallStack( hCur, IMAGE_CURSOR );
+    return hCur;
+}
+
+BOOL WINAPI  CApiHookMgr::MyDestroyCursor( HCURSOR hCursor )
+{
+    BOOL bRet =  DestroyCursor( hCursor );
+    if( bRet )
+    {
+        RemovCallStack( hCursor );
+    }
+    return bRet;
+}
+
+//brush
+HBRUSH  WINAPI  CApiHookMgr::MyCreateBrushIndirect(  CONST LOGBRUSH *plbrush)
+{
+    HBRUSH hBr =  CreateBrushIndirect(plbrush);
+    CreateCallStack( hBr, 0 );
+    return hBr;
+}
+
+HBRUSH  WINAPI  CApiHookMgr::MyCreateSolidBrush(  COLORREF color)
+{
+    HBRUSH hBr =  CreateSolidBrush(color);
+    CreateCallStack( hBr, 0 );
+    return hBr;
+}
+
+HBRUSH  WINAPI  CApiHookMgr::MyCreatePatternBrush(  HBITMAP hbm)
+{
+    HBRUSH hBr =  CreatePatternBrush(hbm);
+    CreateCallStack( hBr, 0 );
+    return hBr;
+}
+
+HBRUSH  WINAPI  CApiHookMgr::MyCreateDIBPatternBrush(  HGLOBAL h,  UINT iUsage)
+{
+    HBRUSH hBr =  CreateDIBPatternBrush(h, iUsage );
+    CreateCallStack( hBr, 0 );
+    return hBr;
+}
+
+HBRUSH  WINAPI  CApiHookMgr::MyCreateDIBPatternBrushPt(  CONST VOID *lpPackedDIB,  UINT iUsage)
+{
+    HBRUSH hBr =  CreateDIBPatternBrushPt(lpPackedDIB,iUsage);
+    CreateCallStack( hBr, 0 );
+    return hBr;
+}
+
+HBRUSH  WINAPI  CApiHookMgr::MyCreateHatchBrush(  int iHatch,  COLORREF color)
+{
+    HBRUSH hBr =  CreateHatchBrush( iHatch, color );
+    CreateCallStack( hBr, 0 );
+    return hBr;
+}
+
+// DC functions
+HDC WINAPI  CApiHookMgr::MyCreateCompatibleDC( HDC hdc )
+{
+	HDC hDC =  CreateCompatibleDC( hdc );
+	CreateCallStack( hDC, 0 );
+	return hDC;
+}
+ 
+HDC WINAPI  CApiHookMgr::MyCreateDCA( LPCSTR pwszDriver,  LPCSTR pwszDevice,  LPCSTR pszPort,  CONST DEVMODEA * pdm )
+{
+	HDC hDC =  CreateDCA( pwszDriver, pwszDevice, pszPort,  pdm );
+	CreateCallStack( hDC , 0 );
+	return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyCreateDCW( LPCWSTR pwszDriver,  LPCWSTR pwszDevice,  LPCWSTR pszPort,  CONST DEVMODEW * pdm )
+{
+	HDC hDC =  CreateDCW( pwszDriver, pwszDevice, pszPort,  pdm );
+	CreateCallStack( hDC, 0 );
+	return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyCreateICA( LPCSTR pszDriver,  LPCSTR pszDevice,  LPCSTR pszPort,  CONST DEVMODEA * pdm )
+{
+	HDC hDC =  CreateICA( pszDriver, pszDevice, pszPort,  pdm );
+	CreateCallStack( hDC, 0 );
+	return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyCreateICW( LPCWSTR pszDriver,  LPCWSTR pszDevice,  LPCWSTR pszPort,  CONST DEVMODEW * pdm )
+{
+	HDC hDC =  CreateICW( pszDriver, pszDevice, pszPort,  pdm );
+	CreateCallStack( hDC, 0 );
+	return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyGetDC( HWND hWnd )
+{
+	HDC hDC =  GetDC( hWnd );
+	CreateCallStack( hDC, 0 );
+	return hDC;
+}
+
+ HDC WINAPI  CApiHookMgr::MyGetDCEx( HWND hWnd, HRGN hrgnClip, DWORD flags )
+ {
+    HDC hDC =  GetDCEx(  hWnd, hrgnClip, flags );
+    CreateCallStack( hDC, 0 );
+    return hDC;
+ }
+
+ HDC WINAPI  CApiHookMgr::MyGetWindowDC( HWND hWnd )
+ {
+    HDC hDC =  GetWindowDC( hWnd );
+    CreateCallStack( hDC, 0 );
+    return hDC;
+ }
+
+
+int WINAPI  CApiHookMgr::MyReleaseDC( HWND hWnd, HDC hDC)
+{
+    int nRet =  ReleaseDC( hWnd, hDC );
+    if( nRet )
+        RemovCallStack( hDC );
+    return nRet;
+}
+
+BOOL WINAPI  CApiHookMgr::MyDeleteDC( HDC hdc)
+{
+    BOOL bRet =  DeleteDC( hdc );
+    if( bRet )
+    {
+        RemovCallStack( hdc );
+    }	
+    return bRet;
+}
+
+// font functions
+HFONT WINAPI  CApiHookMgr::MyCreateFontA(  int cHeight,  int cWidth,  int cEscapement,  int cOrientation,  int cWeight,  DWORD bItalic,
+    DWORD bUnderline,  DWORD bStrikeOut,  DWORD iCharSet,  DWORD iOutPrecision,  DWORD iClipPrecision,
+    DWORD iQuality,  DWORD iPitchAndFamily, LPCSTR pszFaceName)
+{
+HFONT hFont =  CreateFontA( cHeight,  cWidth,  cEscapement,  cOrientation,   cWeight,   bItalic,
+        bUnderline,   bStrikeOut,   iCharSet,   iOutPrecision,   iClipPrecision,
+        iQuality,   iPitchAndFamily,  pszFaceName );
+CreateCallStack( hFont, 0 );
+return hFont;
+}
+
+HFONT WINAPI  CApiHookMgr::MyCreateFontW(  int cHeight,  int cWidth,  int cEscapement,  int cOrientation,  int cWeight,  DWORD bItalic,
+    DWORD bUnderline,  DWORD bStrikeOut,  DWORD iCharSet,  DWORD iOutPrecision,  DWORD iClipPrecision,
+    DWORD iQuality,  DWORD iPitchAndFamily, LPCWSTR pszFaceName)
+{
+
+    HFONT hFont =  CreateFontW( cHeight,  cWidth,  cEscapement,  cOrientation,   cWeight,   bItalic,
+        bUnderline,   bStrikeOut,   iCharSet,   iOutPrecision,   iClipPrecision,
+        iQuality,   iPitchAndFamily,  pszFaceName );
+    CreateCallStack( hFont, 0 );
+    return hFont;
+}
+
+HFONT WINAPI  CApiHookMgr::MyCreateFontIndirectA(  CONST LOGFONTA *lplf)
+{
+    HFONT hFont =  CreateFontIndirectA( lplf );
+    CreateCallStack( hFont, 0 );
+    return hFont;
+}
+
+HFONT WINAPI  CApiHookMgr::MyCreateFontIndirectW( CONST LOGFONTW *lplf)
+{
+    HFONT hFont =  CreateFontIndirectW( lplf );
+    CreateCallStack( hFont, 0 );
+    return hFont;
+}
+
+ // Meta File
+HDC WINAPI  CApiHookMgr::MyCreateMetaFileA(  LPCSTR pszFile )
+{
+    HDC hDC =  CreateMetaFileA( pszFile );
+    CreateCallStack( hDC, 0 );
+    return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyCreateMetaFileW(  LPCWSTR pszFile )
+{
+    HDC hDC =  CreateMetaFileW( pszFile );
+    CreateCallStack( hDC, 0 );
+    return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyCreateEnhMetaFileA(  HDC hdc,  LPCSTR lpFilename,  CONST RECT *lprc,  LPCSTR lpDesc)
+{
+    HDC hDC =  CreateEnhMetaFileA( hdc, lpFilename, lprc, lpDesc );
+    CreateCallStack( hDC, 0 );
+    return hDC;
+}
+
+HDC WINAPI  CApiHookMgr::MyCreateEnhMetaFileW(  HDC hdc,  LPCWSTR lpFilename,  CONST RECT *lprc,  LPCWSTR lpDesc)
+{
+    HDC hDC =  CreateEnhMetaFileW( hdc, lpFilename, lprc, lpDesc );
+    CreateCallStack( hDC, 0 );
+    return hDC;
+
+}
+HENHMETAFILE WINAPI  CApiHookMgr::MyGetEnhMetaFileA(  LPCSTR lpName )
+{
+    HENHMETAFILE hMetaFile =  GetEnhMetaFileA( lpName );
+    CreateCallStack( hMetaFile, 0 );
+    return hMetaFile;
+}
+
+HENHMETAFILE WINAPI  CApiHookMgr::MyGetEnhMetaFileW(  LPCWSTR lpName )
+{
+    HENHMETAFILE hMetaFile =  GetEnhMetaFileW( lpName );
+    CreateCallStack( hMetaFile, 0 );
+    return hMetaFile;
+
+}
+HMETAFILE WINAPI  CApiHookMgr::MyGetMetaFileA(  LPCSTR lpName)
+{
+    HMETAFILE hMetaFile =  GetMetaFileA( lpName );
+    CreateCallStack( hMetaFile, 0 );
+    return hMetaFile;
+}
+
+HMETAFILE WINAPI  CApiHookMgr::MyGetMetaFileW( LPCWSTR lpName )
+{
+    HMETAFILE hMetaFile =  GetMetaFileW( lpName );
+    CreateCallStack( hMetaFile, 0 );
+    return hMetaFile ;
+
+}
+BOOL WINAPI  CApiHookMgr::MyDeleteMetaFile( HMETAFILE hmf )
+{
+    BOOL bRet =  DeleteMetaFile( hmf );
+    if( bRet )
+    RemovCallStack( hmf );
+    return bRet;
+}
+
+BOOL WINAPI  CApiHookMgr::MyDeleteEnhMetaFile( HENHMETAFILE hmf )
+{
+    BOOL bRet =  DeleteEnhMetaFile( hmf );
+    if( bRet )
+    {
+        RemovCallStack( hmf );
+    }	
+    return bRet;
+
+}
+HENHMETAFILE WINAPI  CApiHookMgr::MyCopyEnhMetaFileA( HENHMETAFILE hEnh, LPCSTR lpFileName)
+{
+    HENHMETAFILE hMetaFile =  CopyEnhMetaFileA( hEnh, lpFileName );
+    CreateCallStack( hMetaFile , 0 );
+    return hMetaFile;
+}
+
+HENHMETAFILE WINAPI  CApiHookMgr::MyCopyEnhMetaFileW( HENHMETAFILE hEnh, LPCWSTR lpFileName)
+{
+    HENHMETAFILE hMetaFile =  CopyEnhMetaFileW( hEnh, lpFileName );
+    CreateCallStack( hMetaFile, 0 );
+    return hMetaFile;
+}
+
+HENHMETAFILE WINAPI  CApiHookMgr::MyCloseEnhMetaFile( HDC hdc)
+{
+    HENHMETAFILE hMetaFile =  CloseEnhMetaFile( hdc );
+    if( hMetaFile )
+    {
+        RemovCallStack( hdc );
+        CreateCallStack( hMetaFile, 0 );
+    }
+    return hMetaFile;
+}
+
+HMETAFILE WINAPI  CApiHookMgr::MyCloseMetaFile( HDC hdc)
+{
+    HMETAFILE hMetaFile =  CloseMetaFile( hdc );
+    if( hMetaFile )
+    {
+        RemovCallStack( hdc );
+        CreateCallStack( hMetaFile, 0 );
+    }	
+    return hMetaFile;
+}
+
+
+// Pen
+HPEN WINAPI  CApiHookMgr::MyCreatePen(  int iStyle,  int cWidth,  COLORREF color)
+{
+    HPEN hGDIObj =  CreatePen( iStyle, cWidth, color );
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HPEN WINAPI  CApiHookMgr::MyCreatePenIndirect(  CONST LOGPEN *plpen)
+{
+
+    HPEN hGDIObj =  CreatePenIndirect( plpen );
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HPEN WINAPI  CApiHookMgr::MyExtCreatePen( DWORD iPenStyle, DWORD cWidth, CONST LOGBRUSH *plbrush, DWORD cStyle, CONST DWORD *pstyle)
+{
+    HPEN hGDIObj =  ExtCreatePen( iPenStyle, cWidth, plbrush, cStyle, pstyle );
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+
+// region 
+HRGN WINAPI  CApiHookMgr::MyPathToRegion( HDC hdc)
+{
+    HRGN hGDIObj =  PathToRegion(hdc);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreateEllipticRgn(  int x1,  int y1,  int x2, int y2)
+{
+    HRGN hGDIObj =  CreateEllipticRgn( x1, y1, x2, y2 );
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreateEllipticRgnIndirect(  CONST RECT *lprect)
+{
+    HRGN hGDIObj =  CreateEllipticRgnIndirect(lprect);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreatePolygonRgn( CONST POINT *pptl, int cPoint, int iMode)
+{
+    HRGN hGDIObj =  CreatePolygonRgn(pptl,cPoint,iMode);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreatePolyPolygonRgn( CONST POINT *pptl, CONST INT  *pc, int cPoly, int iMode)
+{
+    HRGN hGDIObj =  CreatePolyPolygonRgn(pptl,pc,cPoly,iMode);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreateRectRgn(  int x1,  int y1,  int x2,  int y2)
+{
+    HRGN hGDIObj =  CreateRectRgn(x1,y1,x2,y2);
+    CreateCallStack(hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreateRectRgnIndirect(  CONST RECT *lprect)
+{
+    HRGN hGDIObj =  CreateRectRgnIndirect(lprect);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyCreateRoundRectRgn(  int x1,  int y1,  int x2,  int y2,  int w,  int h)
+{
+    HRGN hGDIObj =  CreateRoundRectRgn(x1,y1,x2,y2,w,h);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HRGN WINAPI  CApiHookMgr::MyExtCreateRegion( CONST XFORM * lpx,  DWORD nCount, CONST RGNDATA * lpData)
+{
+    HRGN hGDIObj =  ExtCreateRegion(lpx,nCount,lpData);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+ 
+//palette 
+HPALETTE WINAPI  CApiHookMgr::MyCreateHalftonePalette(  HDC hdc)
+{
+    HPALETTE hGDIObj =  CreateHalftonePalette(hdc);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+HPALETTE WINAPI  CApiHookMgr::MyCreatePalette( CONST LOGPALETTE * plpal )
+{
+    HPALETTE hGDIObj =  CreatePalette(plpal);
+    CreateCallStack( hGDIObj, 0 );
+    return hGDIObj;
+}
+
+#endif // _GDI_ALLOC_FUNCS_
 
 
 //////////////////////////////////////////////////////////////////////////////

@@ -70,6 +70,11 @@ DWORD WINAPI CParasiteApp::DumpController( LPVOID pParam )
     {
 		dlog("Starting GDI object leak detection.")
 		dlog("Hooking GDI object allocation functions.")
+
+		if(sm_pHookMgr->HookGDIAllocFuncs())
+		{
+			dlog("GDI object allocation API's hooked.")
+		}
     }
     else if( HT_HANDLE == g_Config::g_HookType )
     {
@@ -413,17 +418,43 @@ void DumpLeakToFile(CString fileName)
             {
                 csFunctionName = pSymbol->Name;
             }
+
+			// Get module information 
+			IMAGEHLP_MODULE64 ModuleInfo; 
+			memset(&ModuleInfo, 0, sizeof(ModuleInfo) ); 
+			ModuleInfo.SizeOfStruct = sizeof(ModuleInfo); 
+			BOOL bRet = ::SymGetModuleInfo64( GetCurrentProcess(), pSymbol->ModBase, &ModuleInfo ); 
+
             DWORD dwLine = 0;
             if( SymGetLineFromAddr64( hProcess, dwOffset, &dwLine, &Line ))
             {
-                CString csFormatString;
+				CString csFormatString;
                 int n = 40 - csFunctionName.GetLength();
-                csFormatString.Format( _T("%s%d%s"), _T("%s%"), n, _T("s%s(%d)"));
-                cs.Format( csFormatString, csFunctionName, _T(" "), Line.FileName, Line.LineNumber );
-            }
+				if( !bRet ) 
+				{
+					csFormatString.Format( _T("%s%d%s"), _T("%s%"), n, _T("s%s(%d)"));
+					cs.Format( csFormatString, csFunctionName, _T(" "), Line.FileName, Line.LineNumber );
+				}
+				else
+				{
+					csFormatString.Format( _T("%s%d%s"), _T("%s%"), n,_T("s%s\t\t%s(%d)"));
+					cs.Format( csFormatString, ModuleInfo.ModuleName,_T(" "),csFunctionName,Line.FileName, Line.LineNumber );
+				}
+			}
             else
             {
-                cs = csFunctionName;
+				CString csFormatString;
+                int n = 40 - csFunctionName.GetLength();
+				if(!bRet)
+				{
+					csFormatString.Format( _T("%s%d%s"), _T("%"), n, _T("s%s"));
+					cs.Format(csFormatString,_T(" "),csFunctionName);
+				}
+				else
+				{
+					csFormatString.Format( _T("%s%d%s"), _T("%s%"), n, _T("s%s"));
+					cs.Format(csFormatString,ModuleInfo.ModuleName,_T(" "),csFunctionName);
+				}
             }
 //            CString cs = (*(stInfo.parCallStack)).GetAt( nIdx);
             cs += _T("\r\n");

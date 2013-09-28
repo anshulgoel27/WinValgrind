@@ -56,6 +56,9 @@ public:
 	// Hook memory alloc functions
 	BOOL HookMemAllocFuncs();
 	
+	// Hook GDI object alloc functions
+	BOOL HookGDIAllocFuncs();
+
 	// 
 	// Unhook all functions and restore original ones
 	//
@@ -100,6 +103,11 @@ private:
 	// Determines whether all memory allocation functions has been successfuly hacked
 	//
 	BOOL m_bMemFuncsHooked;
+
+	//
+	// Determines whether all GDI object allocation functions has been successfuly hacked
+	//
+	BOOL m_bGDIFuncsHooked;
 
 	//
 	// Used when a DLL is newly loaded after hooking a function
@@ -300,6 +308,127 @@ private:
 	static HLOCAL WINAPI MyLocalAlloc( UINT uFlags, SIZE_T uBytes );
 	static HLOCAL WINAPI MyLocalReAlloc( HLOCAL hMem, SIZE_T uBytes, UINT uFlags );
 	static HLOCAL WINAPI MyLocalFree(HLOCAL hMem );
+
+
+	////////////////////////////////////////////////////////////// 
+	// GDI object alloc methods hooks
+	//////////////////////////////////////////////////////////////
+
+	// Bitmap
+	static HANDLE WINAPI MyLoadImageA(HINSTANCE hInst,LPCSTR name,UINT type,int cx,int cy,UINT fuLoad);
+	static HANDLE WINAPI MyLoadImageW( HINSTANCE hInst,LPCWSTR name,UINT type,int cx,int cy,UINT fuLoad);
+	static HBITMAP WINAPI MyLoadBitmapA( HINSTANCE hInstance, LPCSTR lpBitmapName);
+	static HBITMAP WINAPI MyLoadBitmapW( HINSTANCE hInstance, LPCWSTR lpBitmapName );
+	static HANDLE  WINAPI MyLoadImageADef( HINSTANCE hInst, LPCSTR name, UINT type,int cx,int cy, UINT fuLoad);
+	static HANDLE  WINAPI MyLoadImageWDef( HINSTANCE hInst, LPCWSTR name, UINT type, int cx, int cy, UINT fuLoad);
+	static HBITMAP WINAPI MyCreateBitmap(  int nWidth,  int nHeight, UINT nPlanes,  UINT nBitCount,  CONST VOID *lpBits);
+	static HBITMAP WINAPI MyCreateBitmapIndirect(  CONST BITMAP *pbm );
+	static HBITMAP WINAPI MyCreateCompatibleBitmap(  HDC hdc,  int cx,  int cy);
+	static HBITMAP WINAPI MyCreateDIBitmap(  HDC hdc,  CONST BITMAPINFOHEADER *pbmih,  DWORD flInit,  CONST VOID *pjBits,  CONST BITMAPINFO *pbmi,  UINT iUsage);
+	static HBITMAP WINAPI MyCreateDIBSection( HDC hdc,  CONST BITMAPINFO *lpbmi,  UINT usage, VOID **ppvBits,  HANDLE hSection,  DWORD offset);
+	static HBITMAP WINAPI MyCreateDiscardableBitmap( HDC hdc, int cx, int cy);
+	static HANDLE  WINAPI MyCopyImage( HANDLE h, UINT type, int cx, int cy, UINT flags);
+	static BOOL WINAPI MyDeleteObject(  HGDIOBJ ho);
+
+	// Icons
+	static BOOL WINAPI MyGetIconInfo( HICON hIcon, PICONINFO piconinfo);
+	static BOOL WINAPI MyGetIconInfoExA( HICON hicon, PICONINFOEXA piconinfo);
+	static BOOL WINAPI MyGetIconInfoExW( HICON hicon,PICONINFOEXW piconinfo);
+	static HICON WINAPI MyCreateIcon(HINSTANCE hInstance,int nWidth,int nHeight,BYTE cPlanes,BYTE cBitsPixel,CONST BYTE *lpbANDbits,CONST BYTE *lpbXORbits);
+	static HICON WINAPI MyCreateIconFromResource( PBYTE presbits, DWORD dwResSize, BOOL fIcon, DWORD dwVer);
+	static HICON WINAPI MyCreateIconFromResourceEx( PBYTE presbits, DWORD dwResSize,BOOL fIcon,DWORD dwVer,int cxDesired,int cyDesired,UINT Flags );
+	static HICON WINAPI MyCreateIconIndirect( PICONINFO piconinfo );
+	static BOOL  WINAPI MyDestroyIcon(HICON hIcon);
+	static HICON WINAPI MyDuplicateIcon(HINSTANCE hInst, HICON hIcon);
+	static HICON WINAPI MyExtractAssociatedIconA(HINSTANCE hInst,  LPSTR lpIconPath,  LPWORD lpiIcon);
+	static HICON WINAPI MyExtractAssociatedIconW(HINSTANCE hInst,  LPWSTR lpIconPath,  LPWORD lpiIcon);
+	static HICON WINAPI MyExtractAssociatedIconExA(HINSTANCE hInst,LPSTR lpIconPath,  LPWORD lpiIconIndex,  LPWORD lpiIconId);
+	static HICON WINAPI MyExtractAssociatedIconExW(HINSTANCE hInst,LPWSTR lpIconPath,  LPWORD lpiIconIndex,  LPWORD lpiIconId);
+	static HICON WINAPI MyExtractIconA(HINSTANCE hInst, LPCSTR lpszExeFileName, UINT nIconIndex);
+	static HICON WINAPI MyExtractIconW(HINSTANCE hInst, LPCWSTR lpszExeFileName, UINT nIconIndex);
+	static UINT  WINAPI MyExtractIconExA(LPCSTR lpszFile, int nIconIndex, HICON *phiconLarge, HICON *phiconSmall, UINT nIcons);
+	static UINT  WINAPI MyExtractIconExW(LPCWSTR lpszFile, int nIconIndex,  HICON *phiconLarge, HICON *phiconSmall, UINT nIcons);
+	static HICON WINAPI MyLoadIconA( HINSTANCE hInstance, LPCSTR lpIconName );
+	static HICON WINAPI MyLoadIconW( HINSTANCE hInstance, LPCWSTR lpIconName );
+	static UINT  WINAPI MyPrivateExtractIconsA( LPCSTR szFileName, int nIconIndex, int cxIcon, int cyIcon, HICON *phicon, UINT *piconid, UINT nIcons, UINT flags);
+	static UINT  WINAPI MyPrivateExtractIconsW( LPCWSTR szFileName, int nIconIndex, int cxIcon, int cyIcon, HICON *phicon, UINT *piconid,UINT nIcons,UINT flags);
+	static HICON WINAPI MyCopyIcon( HICON hIcon);
+
+	// Cursors
+	static HCURSOR WINAPI MyCreateCursor( HINSTANCE hInst, int xHotSpot, int yHotSpot,int nWidth, int nHeight, CONST VOID *pvANDPlane,CONST VOID *pvXORPlane);
+	static HCURSOR WINAPI MyLoadCursorA( HINSTANCE hInstance, LPCSTR lpCursorName);
+	static HCURSOR WINAPI MyLoadCursorW( HINSTANCE hInstance, LPCWSTR lpCursorName);
+	static HCURSOR WINAPI MyLoadCursorFromFileA( LPCSTR lpFileName );
+	static HCURSOR WINAPI MyLoadCursorFromFileW( LPCWSTR lpFileName );
+	static BOOL WINAPI MyDestroyCursor( HCURSOR hCursor );
+
+	// Brush
+	static HBRUSH  WINAPI MyCreateBrushIndirect(  CONST LOGBRUSH *plbrush);
+	static HBRUSH  WINAPI MyCreateSolidBrush(  COLORREF color);
+	static HBRUSH  WINAPI MyCreatePatternBrush(  HBITMAP hbm);
+	static HBRUSH  WINAPI MyCreateDIBPatternBrush(  HGLOBAL h,  UINT iUsage);
+	static HBRUSH  WINAPI MyCreateDIBPatternBrushPt(  CONST VOID *lpPackedDIB,  UINT iUsage);
+	static HBRUSH  WINAPI MyCreateHatchBrush(  int iHatch,  COLORREF color);
+	
+	// DC
+	static HDC WINAPI MyCreateCompatibleDC( HDC hdc );
+	static HDC WINAPI MyCreateDCA( LPCSTR pwszDriver,  LPCSTR pwszDevice,  LPCSTR pszPort,  CONST DEVMODEA * pdm );
+	static HDC WINAPI MyCreateDCW( LPCWSTR pwszDriver,  LPCWSTR pwszDevice,  LPCWSTR pszPort,  CONST DEVMODEW * pdm );
+	static HDC WINAPI MyCreateICA( LPCSTR pszDriver,  LPCSTR pszDevice,  LPCSTR pszPort,  CONST DEVMODEA * pdm );
+	static HDC WINAPI MyCreateICW( LPCWSTR pszDriver,  LPCWSTR pszDevice,  LPCWSTR pszPort,  CONST DEVMODEW * pdm );
+	static HDC WINAPI MyGetDC( HWND hWnd );
+	static HDC WINAPI MyGetDCEx( HWND hWnd, HRGN hrgnClip, DWORD flags );
+	static HDC WINAPI MyGetWindowDC( HWND hWnd );
+	static int WINAPI MyReleaseDC( HWND hWnd, HDC hDC);
+	static BOOL WINAPI MyDeleteDC( HDC hdc);
+	
+	// Font
+	static HFONT WINAPI MyCreateFontA(  int cHeight,  int cWidth,  int cEscapement,  int cOrientation,  int cWeight,  DWORD bItalic,
+     DWORD bUnderline,  DWORD bStrikeOut,  DWORD iCharSet,  DWORD iOutPrecision,  DWORD iClipPrecision,
+     DWORD iQuality,  DWORD iPitchAndFamily, LPCSTR pszFaceName);
+
+	static HFONT WINAPI MyCreateFontW(  int cHeight,  int cWidth,  int cEscapement,  int cOrientation,  int cWeight,  DWORD bItalic,
+     DWORD bUnderline,  DWORD bStrikeOut,  DWORD iCharSet,  DWORD iOutPrecision,  DWORD iClipPrecision,
+     DWORD iQuality,  DWORD iPitchAndFamily, LPCWSTR pszFaceName);
+
+	static HFONT WINAPI MyCreateFontIndirectA(  CONST LOGFONTA *lplf);
+	static HFONT WINAPI MyCreateFontIndirectW( CONST LOGFONTW *lplf);
+	
+	// Meta File
+	static HDC WINAPI MyCreateMetaFileA(  LPCSTR pszFile );
+	static HDC WINAPI MyCreateMetaFileW(  LPCWSTR pszFile );
+	static HDC WINAPI MyCreateEnhMetaFileA(  HDC hdc,  LPCSTR lpFilename,  CONST RECT *lprc,  LPCSTR lpDesc);
+	static HDC WINAPI MyCreateEnhMetaFileW(  HDC hdc,  LPCWSTR lpFilename,  CONST RECT *lprc,  LPCWSTR lpDesc);
+	static HENHMETAFILE WINAPI MyGetEnhMetaFileA(  LPCSTR lpName );
+	static HENHMETAFILE WINAPI MyGetEnhMetaFileW(  LPCWSTR lpName );
+	static HMETAFILE WINAPI MyGetMetaFileA(  LPCSTR lpName);
+	static HMETAFILE WINAPI MyGetMetaFileW( LPCWSTR lpName );
+	static BOOL WINAPI MyDeleteMetaFile( HMETAFILE hmf );
+	static BOOL WINAPI MyDeleteEnhMetaFile( HENHMETAFILE hmf );
+	static HENHMETAFILE WINAPI MyCopyEnhMetaFileA( HENHMETAFILE hEnh, LPCSTR lpFileName);
+	static HENHMETAFILE WINAPI MyCopyEnhMetaFileW( HENHMETAFILE hEnh, LPCWSTR lpFileName);
+	static HENHMETAFILE WINAPI MyCloseEnhMetaFile( HDC hdc);
+	static HMETAFILE WINAPI MyCloseMetaFile( HDC hdc);
+	
+	// Pen
+	static HPEN WINAPI MyCreatePen(  int iStyle,  int cWidth,  COLORREF color);
+	static HPEN WINAPI MyCreatePenIndirect(  CONST LOGPEN *plpen);
+	static HPEN WINAPI MyExtCreatePen( DWORD iPenStyle, DWORD cWidth, CONST LOGBRUSH *plbrush, DWORD cStyle, CONST DWORD *pstyle);
+	
+	// Region 
+	static HRGN WINAPI MyPathToRegion( HDC hdc);
+	static HRGN WINAPI MyCreateEllipticRgn(  int x1,  int y1,  int x2, int y2);
+	static HRGN WINAPI MyCreateEllipticRgnIndirect(  CONST RECT *lprect);
+	static HRGN WINAPI MyCreatePolygonRgn( CONST POINT *pptl, int cPoint, int iMode);
+	static HRGN WINAPI MyCreatePolyPolygonRgn( CONST POINT *pptl, CONST INT  *pc, int cPoly, int iMode);
+	static HRGN WINAPI MyCreateRectRgn(  int x1,  int y1,  int x2,  int y2);
+	static HRGN WINAPI MyCreateRectRgnIndirect(  CONST RECT *lprect);
+	static HRGN WINAPI MyCreateRoundRectRgn(  int x1,  int y1,  int x2,  int y2,  int w,  int h);
+	static HRGN WINAPI MyExtCreateRegion( CONST XFORM * lpx,  DWORD nCount, CONST RGNDATA * lpData);
+	
+	// Palette 
+	static HPALETTE WINAPI MyCreateHalftonePalette(  HDC hdc);
+	static HPALETTE WINAPI MyCreatePalette( CONST LOGPALETTE * plpal );
 
 
 
