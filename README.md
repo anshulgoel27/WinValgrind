@@ -86,7 +86,6 @@ usage: winvalgrind [-gc] | [-sm <PID>]
 2.) Edit the generated config.xml.
 
   --> Set the monitor type.
-  Note: Currently only "HANDLE" & "MEMORY" type monitor is supported.
   
   --> Add the symbol path of the application you want to monitor.
 
@@ -122,117 +121,116 @@ at-last, all the remaining entries in map are treated as leaked once, and there 
 Currently supported API hooks
 =============================
 
-    Handle allocation APIs          Memory allocation APIs
-            
-    LoadLibraryA                    HeapAlloc
-    LoadLibraryW                    HeapFree
-    LoadLibraryExA                  HeapReAlloc
-    LoadLibraryExW                  VirtualAlloc
-    GetProcAddress                  VirtualFree
-    CreateEventA                    VirtualAllocEx
-    CreateEventW                    VirtualFreeEx
-    CreateEventExA                  GlobalAlloc
-    CreateEventExW                  GlobalReAlloc
-    OpenEventA                      GlobalFree
-    OpenEventW                      LocalAlloc
-    CreateMutexA                    LocalReAlloc
-    CreateMutexW                    LocalFree
-    CreateMutexExA                  MapViewOfFile
-    CreateMutexExW                  MapViewOfFileEx
-    OpenMutexA                      UnmapViewOfFile
-    OpenMutexW                      CoTaskMemAlloc
-    CreateSemaphoreA                CoTaskMemRealloc
-    CreateSemaphoreW                CoTaskMemFree
-    CreateSemaphoreExA      
-    CreateSemaphoreExW      
-    OpenSemaphoreA  
-    OpenSemaphoreW  
-    CreateWaitableTimerA    
-    CreateWaitableTimerW    
-    CreateWaitableTimerExA  
-    CreateWaitableTimerExW  
-    OpenWaitableTimerA      
-    OpenWaitableTimerW      
-    CreateFileA     
-    CreateFileW     
-    CreateFileTransactedA   
-    CreateFileTransactedW   
-    FindFirstFileA  
-    FindFirstFileW  
-    FindFirstFileExA        
-    FindFirstFileExW        
-    FindFirstFileExW        
-    FindFirstFileNameW      
-    FindFirstFileTransactedA        
-    FindFirstFileTransactedW        
-    FindFirstStreamTransactedW      
-    FindFirstStreamW        
-    FindClose       
-    OpenFileById    
-    ReOpenFile      
-    CreateIoCompletionPort  
-    CreateRestrictedToken   
-    DuplicateToken  
-    DuplicateTokenEx        
-    OpenProcessToken        
-    OpenThreadToken 
-    FindFirstChangeNotificationA    
-    FindFirstChangeNotificationW    
-    FindCloseChangeNotification     
-    CreateMemoryResourceNotification        
-    CreateFileMappingA      
-    CreateFileMappingW      
-    CreateFileMappingNumaA  
-    CreateFileMappingNumaW  
-    OpenFileMappingA        
-    OpenFileMappingW        
-    HeapCreate      
-    HeapDestroy     
-    GlobalAlloc     
-    GlobalReAlloc   
-    GlobalFree      
-    LocalAlloc      
-    LocalReAlloc    
-    LocalFree       
-    CreateProcessA  
-    CreateProcessW  
-    CreateProcessAsUserA    
-    CreateProcessAsUserW    
-    CreateProcessWithLogonW 
-    CreateProcessWithTokenW 
-    OpenProcess     
-    CreateThread    
-    CreateRemoteThread      
-    OpenThread      
-    CreateJobObjectA        
-    CreateJobObjectW        
-    CreateMailslotA 
-    CreateMailslotW 
-    CreatePipe      
-    CreateNamedPipeA        
-    CreateNamedPipeW        
-    RegCreateKeyExA 
-    RegCreateKeyExW 
-    RegCreateKeyTransactedA 
-    RegCreateKeyTransactedW 
-    RegOpenCurrentUser      
-    RegOpenKeyA     
-    RegOpenKeyW     
-    RegOpenKeyExA   
-    RegOpenKeyExW   
-    RegOpenKeyTransactedA   
-    RegOpenKeyTransactedW   
-    RegOpenUserClassesRoot  
-    RegCreateKeyA   
-    RegCreateKeyW   
-    RegCloseKey     
-    DuplicateHandle 
-    CloseHandle      
-  
+      Handle allocation APIs                  GDI object allocation APIs      Memory allocation APIs
+      ----------------------                  --------------------------      ----------------------
+      
+      LoadLibraryA                            LoadBitmapA                     HeapAlloc
+      LoadLibraryW                            LoadBitmapW                     HeapFree
+      LoadLibraryExA                          LoadImageA                      HeapReAlloc
+      LoadLibraryExW                          LoadImageW                      VirtualAlloc
+      GetProcAddress                          CreateBitmap                    VirtualFree
+      CreateEventA                            CreateBitmapIndirect            VirtualAllocEx
+      CreateEventW                            CreateCompatibleBitmap          VirtualFreeEx
+      CreateEventExA                          CreateDIBitmap                  GlobalAlloc
+      CreateEventExW                          CreateDIBSection                GlobalReAlloc
+      OpenEventA                              CreateDiscardableBitmap         GlobalFree
+      OpenEventW                              CopyImage                       LocalAlloc
+      CreateMutexA                            GetIconInfo                     LocalReAlloc
+      CreateMutexW                            GetIconInfoExA                  LocalFree
+      CreateMutexExA                          GetIconInfoExA                  MapViewOfFile
+      CreateMutexExW                          DeleteObject                    MapViewOfFileEx
+      OpenMutexA                              CopyIcon                        UnmapViewOfFile
+      OpenMutexW                              CreateIcon                      CoTaskMemAlloc
+      CreateSemaphoreA                        CreateIconFromResource          CoTaskMemRealloc
+      CreateSemaphoreW                        CreateIconFromResourceEx        CoTaskMemFree
+      CreateSemaphoreExA                      CreateIconIndirect      
+      CreateSemaphoreExW                      DestroyIcon     
+      OpenSemaphoreA                          DuplicateIcon   
+      OpenSemaphoreW                          ExtractAssociatedIconA  
+      CreateWaitableTimerA                    ExtractAssociatedIconW  
+      CreateWaitableTimerW                    ExtractAssociatedIconExA        
+      CreateWaitableTimerExA                  ExtractAssociatedIconExW        
+      CreateWaitableTimerExW                  ExtractIconA    
+      OpenWaitableTimerA                      ExtractIconW    
+      OpenWaitableTimerW                      ExtractIconExA  
+      CreateFileA                             ExtractIconExW  
+      CreateFileW                             LoadIconA       
+      CreateFileTransactedA                   LoadIconW       
+      CreateFileTransactedW                   PrivateExtractIconsA    
+      FindFirstFileA                          PrivateExtractIconsW    
+      FindFirstFileW                          CreateCursor    
+      FindFirstFileExA                        LoadCursorA     
+      FindFirstFileExW                        LoadCursorW     
+      FindFirstFileExW                        LoadCursorFromFileA     
+      FindFirstFileNameW                      LoadCursorFromFileW     
+      FindFirstFileTransactedA                DestroyCursor   
+      FindFirstFileTransactedW                CreateBrushIndirect     
+      FindFirstStreamTransactedW              CreateSolidBrush        
+      FindFirstStreamW                        CreatePatternBrush      
+      FindClose                               CreateDIBPatternBrush   
+      OpenFileById                            CreateDIBPatternBrushPt 
+      ReOpenFile                              CreateHatchBrush        
+      CreateIoCompletionPort                  CreateCompatibleDC      
+      CreateRestrictedToken                   CreateDCA       
+      DuplicateToken                          CreateDCW       
+      DuplicateTokenEx                        CreateICA       
+      OpenProcessToken                        CreateICW       
+      OpenThreadToken                         GetDC   
+      FindFirstChangeNotificationA            GetDCEx 
+      FindFirstChangeNotificationW            GetWindowDC     
+      FindCloseChangeNotification             ReleaseDC       
+      CreateMemoryResourceNotification        DeleteDC        
+      CreateFileMappingA                      CreateFontA     
+      CreateFileMappingW                      CreateFontW     
+      CreateFileMappingNumaA                  CreateFontIndirectA     
+      CreateFileMappingNumaW                  CreateFontIndirectW     
+      OpenFileMappingA                        CreateMetaFileA 
+      OpenFileMappingW                        CreateMetaFileW 
+      HeapCreate                              CreateEnhMetaFileA      
+      HeapDestroy                             CreateEnhMetaFileW      
+      GlobalAlloc                             GetEnhMetaFileA 
+      GlobalReAlloc                           GetEnhMetaFileW 
+      GlobalFree                              GetMetaFileA    
+      LocalAlloc                              GetMetaFileW    
+      LocalReAlloc                            DeleteMetaFile  
+      LocalFree                               DeleteEnhMetaFile       
+      CreateProcessA                          CopyEnhMetaFileA        
+      CreateProcessW                          CopyEnhMetaFileW        
+      CreateProcessAsUserA                    CloseEnhMetaFile        
+      CreateProcessAsUserW                    CloseMetaFile   
+      CreateProcessWithLogonW                 CreatePen       
+      CreateProcessWithTokenW                 CreatePenIndirect       
+      OpenProcess                             ExtCreatePen    
+      CreateThread                            PathToRegion    
+      CreateRemoteThread                      CreateEllipticRgn       
+      OpenThread                              CreateEllipticRgnIndirect       
+      CreateJobObjectA                        CreatePolygonRgn        
+      CreateJobObjectW                        CreatePolyPolygonRgn    
+      CreateMailslotA                         CreateRectRgn   
+      CreateMailslotW                         CreateRectRgnIndirect   
+      CreatePipe                              CreateRoundRectRgn      
+      CreateNamedPipeA                        ExtCreateRegion 
+      CreateNamedPipeW                        CreateHalftonePalette   
+      RegCreateKeyExA                         CreatePalette   
+      RegCreateKeyExW         
+      RegCreateKeyTransactedA         
+      RegCreateKeyTransactedW         
+      RegOpenCurrentUser              
+      RegOpenKeyA             
+      RegOpenKeyW             
+      RegOpenKeyExA           
+      RegOpenKeyExW           
+      RegOpenKeyTransactedA           
+      RegOpenKeyTransactedW           
+      RegOpenUserClassesRoot          
+      RegCreateKeyA           
+      RegCreateKeyW           
+      RegCloseKey             
+      DuplicateHandle         
+      CloseHandle             
+
 What is coming up?
 ==================
-
-  --> GDI objects allocation API hooks.
   
   --> GUI
   
